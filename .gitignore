@@ -1,0 +1,11 @@
+# C++ related
+src/*.o
+
+# Executables
+bin/
+
+# Scons
+.sconsign.dblite
+
+# Garbage from OS
+.DS_Store
