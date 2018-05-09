@@ -9,3 +9,6 @@ bin/
 
 # Garbage from OS
 .DS_Store
+
+# Image and video data
+data/

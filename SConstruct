@@ -8,7 +8,10 @@ env.Append(LIBS = [
     'boost_log-mt',
     'boost_thread-mt',
 	'boost_filesystem',
-	'boost_serialization'
+	'boost_serialization',
+	'opencv_highgui',
+	'opencv_core',
+	'opencv_videoio'
 ])
 
 source 	= env.Glob('./src/*.cpp')
