@@ -1,0 +1,4 @@
+Import('env')
+
+source = env.Glob('./*.cpp')
+Return('source')

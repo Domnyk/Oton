@@ -1,6 +1,7 @@
 import os
 
 env = Environment()
+Export('env')
 
 env.Append(LIBS = [
     'boost_system',
@@ -14,5 +15,12 @@ env.Append(LIBS = [
 	'opencv_videoio'
 ])
 
-source 	= env.Glob('./src/*.cpp')
+# Source related instruction
+sourceRootPath = './src/'
+
+rootSource 		= SConscript(os.path.join(sourceRootPath, 'SConscript'))
+movieSource 	= SConscript(os.path.join(sourceRootPath, 'movie/', 'SConscript'))
+networkSource 	= SConscript(os.path.join(sourceRootPath, 'network/', 'SConscript'))
+
+source 	= rootSource + movieSource + networkSource
 app 	= env.Program(target = './bin/server', source = source)

@@ -6,8 +6,8 @@
 #include <opencv2/core.hpp>     // Basic OpenCV structures (cv::Mat, Scalar)
 #include <opencv2/videoio.hpp>
 #include <opencv2/highgui.hpp>  // OpenCV window I/O
-#include "tcp_server.hpp"
-#include "tcp_connection.hpp"
+#include "network/tcp_server.hpp"
+#include "network/tcp_connection.hpp"
 
 using namespace cv;
 using namespace std;
