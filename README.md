@@ -1,9 +1,6 @@
 # Oton
-Video server
+Movie streaming server
 
 ### Build requirements
 * Boost
 * SCons
-
-### Code styles
-* Files which define classes are named with upper letter
