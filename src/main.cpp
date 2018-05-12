@@ -11,8 +11,8 @@ using namespace cv;
 using namespace std;
 
 int main() {
-	VideoStream vs("../data/Megamind.avi");
-    vs.getFrame(9999999);
+	VideoStream vs("./data/Megamind.avi");
+    vs.getFrame(0);
 	/* 
 	try {
     	boost::asio::io_context io_context;

@@ -35,4 +35,9 @@ Frame VideoStream::getFrame(unsigned frameNum) {
 							to_string(frameNum); 
 		throw runtime_error(errorMsg);
 	}
+
+	Mat frameData;
+	videoCapture_.set(CAP_PROP_POS_FRAMES, frameNum);
+	videoCapture_ >> frameData;
+	return Frame(frameNum, frameData);
 }

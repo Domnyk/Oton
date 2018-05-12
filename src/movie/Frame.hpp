@@ -6,9 +6,9 @@ using namespace cv;
 
 class Frame {
 public:
-	Frame(unsigned);
-	
+	Frame(unsigned, Mat);
+	Frame resize();
 private:
-	unsigned frameNum_;
-	Mat frameRepresentatio_;
+	const unsigned frameNum_;
+	const Mat frameData_;
 };
