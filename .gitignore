@@ -1,5 +1,5 @@
 # C++ related
-src/*.o
+src/**/*.o
 
 # Executables
 bin/
@@ -12,3 +12,4 @@ bin/
 
 # Image and video data
 data/
+*.o
