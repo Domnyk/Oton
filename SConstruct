@@ -12,7 +12,9 @@ env.Append(LIBS = [
 	'boost_serialization',
 	'opencv_highgui',
 	'opencv_core',
-	'opencv_videoio'
+	'opencv_videoio',
+	'opencv_imgproc',
+	'opencv_imgcodecs'
 ])
 
 # Source related instruction

@@ -7,8 +7,14 @@ using namespace cv;
 class Frame {
 public:
 	Frame(unsigned, Mat);
-	Frame resize();
+	Frame(const Frame&);
+
+	Frame resize(Size);
+
+	inline const Mat& getPixelMatrix() const {
+		return pixelMatrix_;
+	}
 private:
 	const unsigned frameNum_;
-	const Mat frameData_;
+	Mat pixelMatrix_;
 };

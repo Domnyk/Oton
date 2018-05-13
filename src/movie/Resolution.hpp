@@ -3,6 +3,7 @@
 using namespace cv;
 
 class Resolution {
+public:
 	static const Size get1080p() {
 		return Size(1920, 1080);
 	}
@@ -12,7 +13,7 @@ class Resolution {
 	}
 
 	static const Size get360p() {
-		return Size(480, 360);
+		return Size(640, 360);
 	}
 
 	static const Size get144p() {
