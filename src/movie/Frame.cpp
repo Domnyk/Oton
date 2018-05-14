@@ -18,6 +18,11 @@ Frame Frame::resize(Size desiredSize) {
 	unsigned const scaleFactorX = 0;
 	unsigned const scaleFactorY = 0;
 
+	const Size sourceSize = getSize();
+	if (sourceSize.width < desiredSize.width || sourceSize.height < desiredSize.height) {
+		throw runtime_error("Desired size is bigger than source size");
+	}
+
 	try {
 		::resize(this->pixelMatrix_, resizedFrame.pixelMatrix_, desiredSize, 
 			scaleFactorX, scaleFactorY, INTER_AREA);

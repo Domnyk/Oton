@@ -4,21 +4,13 @@
 #include <opencv2/imgcodecs.hpp>
 #include "network/tcp_server.hpp"
 #include "network/tcp_connection.hpp"
-#include "movie/VideoStream.hpp"
-#include "movie/Frame.hpp"
-#include "movie/Resolution.hpp"
+#include "movie/Movie.hpp"
 
 using namespace cv;
 using namespace std;
 
 int main() {
-	VideoStream vs("./data/12.Monkeys.S01E01.PL.avi");
-
-  Frame source = vs.getFrame(420);
-  imwrite("test_standard.jpg", source.getPixelMatrix());
-
-  Frame resized = source.resize(Resolution::get144p());
-  imwrite("test_resized.jpg", resized.getPixelMatrix());
+	Movie movie("./data/12.Monkeys.S01E01.PL.avi");
 	/* 
 	try {
     	boost::asio::io_context io_context;

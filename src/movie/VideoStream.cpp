@@ -5,11 +5,7 @@
 using namespace std;
 
 VideoStream::VideoStream(const string& fileName) : videoCapture_(), numOfFrames(0) {
-	try {
-		open(fileName);
-	} catch (std::exception& e) {
-		cerr << "An error occured:" << e.what() << endl;
-	}
+	open(fileName);
 }
 
 void VideoStream::open(const string& fileName) {
