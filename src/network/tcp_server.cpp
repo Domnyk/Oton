@@ -10,7 +10,6 @@ tcp_server::tcp_server(boost::asio::io_context& io_context) : acceptor_(io_conte
 
 unsigned short tcp_server::get_port() {
 	boost::asio::ip::tcp::endpoint endpoint = acceptor_.local_endpoint();
-
 	return endpoint.port();
 }
 

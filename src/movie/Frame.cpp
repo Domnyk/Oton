@@ -1,5 +1,6 @@
 #include <iostream>
 #include <opencv2/imgproc.hpp>
+#include <opencv2/imgcodecs.hpp>
 #include "Frame.hpp"
 
 using namespace std;
