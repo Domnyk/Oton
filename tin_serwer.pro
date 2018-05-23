@@ -97,7 +97,7 @@ macx{
         -lopencv_imgcodecs \
         -lopencv_core
 
-	INCLUDEPATH += /usr/local/include/"
+	INCLUDEPATH += "/usr/local/include/"
 }
 
 
