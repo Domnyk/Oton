@@ -6,9 +6,9 @@
 
 QT       += core gui
 
-QMAKE_CXXFLAGS += -std=c++11 
+QMAKE_CXXFLAGS += -std=c++11 -m64
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT += widgets
 
 TARGET = tin_serwer
 TEMPLATE = app
@@ -85,6 +85,9 @@ unix:!macx{
 
 
 macx{
+
+    LIBS += -L"/usr/local/lib/"
+
     LIBS += -lboost_system \
         -lboost_filesystem \
         -lboost_serialization \
@@ -93,6 +96,8 @@ macx{
         -lopencv_imgproc \
         -lopencv_imgcodecs \
         -lopencv_core
+
+	INCLUDEPATH += /usr/local/include/"
 }
 
 

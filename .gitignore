@@ -14,3 +14,8 @@ bin/
 # Image and video data
 data/
 *.o
+
+# Platform dependent
+Makefile
+
+
