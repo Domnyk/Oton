@@ -20,4 +20,4 @@ private:
 
 	vector<string> moviesNames_;
 	unsigned short maxNumOfClients_;
-}
+};
