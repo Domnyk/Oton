@@ -34,7 +34,10 @@ SOURCES += \
     src/movie/Movie.cpp \
     src/movie/VideoStream.cpp \
     src/network/tcp_connection.cpp \
-    src/network/tcp_server.cpp
+    src/network/tcp_server.cpp \
+    src/server/movie_layer.cpp \
+    src/server/network_layer.cpp \
+    src/network/udp_server.cpp
 
 HEADERS += \
     src/gui/mainwindow.h \
@@ -45,7 +48,10 @@ HEADERS += \
     src/movie/Resolution.hpp \
     src/movie/VideoStream.hpp \
     src/network/tcp_connection.hpp \
-    src/network/tcp_server.hpp
+    src/network/tcp_server.hpp \
+    src/server/movie_layer.hpp \
+    src/server/network_layer.hpp \
+    src/network/udp_server.hpp
 
 DESTDIR = bin/
 OBJECTS_DIR = bin/obj
@@ -86,7 +92,7 @@ unix:!macx{
 
 macx{
 
-    LIBS += -L"/usr/local/lib/"
+    LIBS += -L"/usr/local/lib"
 
     LIBS += -lboost_system \
         -lboost_filesystem \
@@ -97,7 +103,7 @@ macx{
         -lopencv_imgcodecs \
         -lopencv_core
 
-	INCLUDEPATH += "/usr/local/include/"
+        INCLUDEPATH += "/usr/local/include"
 }
 
 
