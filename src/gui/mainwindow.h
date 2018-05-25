@@ -3,7 +3,6 @@
 
 #include <QMainWindow>
 #include <QFileDialog>
-
 #include "../server/Server.hpp"
 
 namespace Ui {
@@ -37,6 +36,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+    Server server;
 };
 
 #endif // MAINWINDOW_H

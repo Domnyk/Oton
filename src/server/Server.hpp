@@ -1,13 +1,14 @@
 #include <vector>
 #include <string>
-
+#include "network_layer.hpp"
+#include "movie_layer.hpp"
 
 using namespace std;
 
 class Server {
 public:
-	Server() : moviesNames_(), maxNumOfClients_(5) {}
-
+    Server();
+    Server(const std::string&, unsigned short);
 private:
 	void prepareToDistribution() {
 	}
@@ -18,6 +19,6 @@ private:
 	void startListeningForConns() {
 	}
 
-	vector<string> moviesNames_;
-	unsigned short maxNumOfClients_;
+    network_layer network_layer_;
+    movie_layer movie_layer_;
 };

@@ -1,3 +1,4 @@
+#include <iostream>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
@@ -25,7 +26,6 @@ void MainWindow::on_btn_choose_file_clicked(bool checked)
 
 void MainWindow::on_btn_close_server_clicked()
 {
-
 }
 
 void MainWindow::on_btn_choose_file_clicked()
@@ -50,5 +50,8 @@ void MainWindow::on_btn_show_details_clicked()
 
 void MainWindow::on_btn_open_server_clicked()
 {
+    std::string host_address = ui->edit_host_address->text().toStdString();
+    unsigned short port = ui->edit_port->text().toUShort();
 
+    Server server(host_address, port);
 }
