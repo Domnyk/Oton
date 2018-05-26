@@ -7,9 +7,11 @@ using boost::asio::ip::tcp;
 class tcp_server
 {
 public:
-	tcp_server(boost::asio::io_context&);
+    tcp_server(boost::asio::io_context&);
 
-	unsigned short get_port();
+    unsigned short get_port() const {
+        return acceptor_.local_endpoint().port();
+    }
 private:
 	void start_accept();
 	void handle_accept(tcp_connection::shared_pointer, const boost::system::error_code&);

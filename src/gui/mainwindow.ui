@@ -17,9 +17,9 @@
    <widget class="QPushButton" name="btn_open_server">
     <property name="geometry">
      <rect>
-      <x>80</x>
+      <x>68</x>
       <y>170</y>
-      <width>89</width>
+      <width>101</width>
       <height>25</height>
      </rect>
     </property>
@@ -31,12 +31,26 @@
     <property name="geometry">
      <rect>
       <x>70</x>
-      <y>60</y>
+      <y>34</y>
       <width>221</width>
-      <height>81</height>
+      <height>111</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="layout_address">
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_tcp_port">
+       <property name="text">
+        <string>TCP Port</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_ip_address">
+       <property name="text">
+        <string>IP Address:</string>
+       </property>
+      </widget>
+     </item>
      <item row="0" column="1">
       <widget class="QLineEdit" name="edit_host_address">
        <property name="text">
@@ -48,32 +62,32 @@
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QLineEdit" name="edit_port">
-       <property name="text">
-        <string>80</string>
-       </property>
-       <property name="maxLength">
-        <number>5</number>
+      <widget class="QLineEdit" name="tcp_port">
+       <property name="enabled">
+        <bool>false</bool>
        </property>
       </widget>
      </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_port">
-       <property name="text">
-        <string>Port:</string>
+     <item row="2" column="1">
+      <widget class="QLineEdit" name="udp_port">
+       <property name="enabled">
+        <bool>false</bool>
        </property>
       </widget>
      </item>
-     <item row="0" column="0">
-      <widget class="QLabel" name="label_ip_address">
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_udp_port">
        <property name="text">
-        <string>IP Address:</string>
+        <string>UDP Port</string>
        </property>
       </widget>
      </item>
     </layout>
    </widget>
    <widget class="QPushButton" name="btn_choose_file">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>370</x>
@@ -87,6 +101,9 @@
     </property>
    </widget>
    <widget class="QPushButton" name="btn_kick_peer">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>380</x>
@@ -123,6 +140,9 @@
     </property>
    </widget>
    <widget class="QPushButton" name="btn_show_details">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>498</x>
@@ -136,11 +156,14 @@
     </property>
    </widget>
    <widget class="QPushButton" name="btn_close_server">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
-      <x>200</x>
+      <x>188</x>
       <y>170</y>
-      <width>89</width>
+      <width>101</width>
       <height>25</height>
      </rect>
     </property>

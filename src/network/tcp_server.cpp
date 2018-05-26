@@ -4,13 +4,11 @@
 #include "tcp_connection.hpp"
 #include "tcp_server.hpp"
 
-tcp_server::tcp_server(boost::asio::io_context& io_context) : acceptor_(io_context, tcp::endpoint(tcp::v4(), 0)) {
-	start_accept();
-}
+const int ANY_PORT = 0;
 
-unsigned short tcp_server::get_port() {
-	boost::asio::ip::tcp::endpoint endpoint = acceptor_.local_endpoint();
-	return endpoint.port();
+tcp_server::tcp_server(boost::asio::io_context& io_context)
+    : acceptor_(io_context, tcp::endpoint(tcp::v4(), ANY_PORT)) {
+    start_accept();
 }
 
 void tcp_server::start_accept() {

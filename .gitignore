@@ -18,4 +18,8 @@ data/
 # Platform dependent
 Makefile
 
+# QT config files
+tin_serwer.pro.user*
 
+# QT is a little bit too helpful
+*.autosave
