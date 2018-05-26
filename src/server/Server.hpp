@@ -8,7 +8,11 @@ using namespace std;
 class Server {
 public:
     Server();
-    Server(const std::string&, unsigned short);
+    Server(const std::string&);
+
+    network_layer& get_network_layer() {
+        return network_layer_;
+    }
 private:
 	void prepareToDistribution() {
 	}

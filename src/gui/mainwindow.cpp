@@ -51,7 +51,6 @@ void MainWindow::on_btn_show_details_clicked()
 void MainWindow::on_btn_open_server_clicked()
 {
     std::string host_address = ui->edit_host_address->text().toStdString();
-    unsigned short port = ui->edit_port->text().toUShort();
 
-    Server server(host_address, port);
+    server = std::unique_ptr<Server>(new Server(host_address));
 }

@@ -37,6 +37,13 @@
      </rect>
     </property>
     <layout class="QGridLayout" name="layout_address">
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_ip_address">
+       <property name="text">
+        <string>IP Address:</string>
+       </property>
+      </widget>
+     </item>
      <item row="0" column="1">
       <widget class="QLineEdit" name="edit_host_address">
        <property name="text">
@@ -44,30 +51,6 @@
        </property>
        <property name="maxLength">
         <number>15</number>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="edit_port">
-       <property name="text">
-        <string>80</string>
-       </property>
-       <property name="maxLength">
-        <number>5</number>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_port">
-       <property name="text">
-        <string>Port:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0">
-      <widget class="QLabel" name="label_ip_address">
-       <property name="text">
-        <string>IP Address:</string>
        </property>
       </widget>
      </item>

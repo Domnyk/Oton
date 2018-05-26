@@ -36,7 +36,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    Server server;
+    std::unique_ptr<Server> server;
 };
 
 #endif // MAINWINDOW_H

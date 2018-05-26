@@ -3,17 +3,22 @@
 
 #include <string>
 #include <boost/asio.hpp>
+#include <vector>
+#include <thread>
 #include "../network/tcp_server.hpp"
 #include "../network/udp_server.hpp"
 
 class network_layer
 {
 public:
-    network_layer();
-    network_layer(const std::string& address, const unsigned short port);
+    network_layer(const std::string&, const unsigned short num_of_threads_for_asio = network_layer::default_num_of_thread_for_asio);
+    ~network_layer();
 
-    static const std::string default_address;
-    static const unsigned short default_port;
+    static const unsigned short default_num_of_thread_for_asio;
+
+    udp_server& get_udp_server() {
+        return udp_server_;
+    }
 private:
     void start_accept();
     void start_accept_tcp();
@@ -22,11 +27,14 @@ private:
 
     std::string address;
     unsigned short port;
+    const unsigned short num_of_threads_for_asio;
 
     boost::asio::io_context io_context;
 
     tcp_server tcp_server_;
     udp_server udp_server_;
+
+    std::vector<std::thread> threads;
 };
 
 #endif // NETWORK_LAYER_HPP
