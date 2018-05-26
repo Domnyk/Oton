@@ -16,8 +16,12 @@ public:
 
     static const unsigned short default_num_of_thread_for_asio;
 
-    udp_server& get_udp_server() {
+    const udp_server& get_udp_server() const {
         return udp_server_;
+    }
+
+    const tcp_server& get_tcp_server() const {
+        return tcp_server_;
     }
 private:
     void start_accept();

@@ -11,6 +11,10 @@ public:
     udp_server(boost::asio::io_context&);
 
     void start_send(const std::string&, unsigned short, const std::string&);
+
+    unsigned short get_port() const {
+        return socket.local_endpoint().port();
+    }
 private:
     void start_receive();
     void handle_receive();

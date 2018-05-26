@@ -11,11 +11,6 @@ tcp_server::tcp_server(boost::asio::io_context& io_context)
     start_accept();
 }
 
-unsigned short tcp_server::get_port() {
-	boost::asio::ip::tcp::endpoint endpoint = acceptor_.local_endpoint();
-	return endpoint.port();
-}
-
 void tcp_server::start_accept() {
 	tcp_connection::shared_pointer new_connection = tcp_connection::create(acceptor_.get_executor().context());
 
