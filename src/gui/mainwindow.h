@@ -17,6 +17,9 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+signals:
+    void user_better_connects();
+
 private slots:
     void on_edit_host_address_textChanged(const QString &arg1);
 
@@ -34,6 +37,7 @@ private slots:
 
     void on_btn_open_server_clicked();
 
+    void non_list_peers_user_connects(const std::string&);
 private:
     Ui::MainWindow *ui;
     std::unique_ptr<Server> server;

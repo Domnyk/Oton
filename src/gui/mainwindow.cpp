@@ -62,6 +62,13 @@ void MainWindow::on_btn_show_details_clicked()
 
 }
 
+void MainWindow::non_list_peers_user_connects(const std::string& ip) {
+    std::cout << "IP is: " << ip << std::endl;
+
+    ui->list_peers->addItem(QString::fromStdString(ip));
+    ui->list_peers->update();
+}
+
 void MainWindow::on_btn_open_server_clicked()
 {
     ui->btn_open_server->setEnabled(false);
@@ -69,6 +76,15 @@ void MainWindow::on_btn_open_server_clicked()
     std::string host_address = ui->edit_host_address->text().toStdString();
 
     server = std::unique_ptr<Server>(new Server(host_address));    
+
+    qRegisterMetaType<std::string>("std::string");
+
+    /*
+     * Connect network_layer to peer list
+     */
+    QObject::connect(&server->get_network_layer(), &network_layer::user_connects,
+                     this, &MainWindow::non_list_peers_user_connects);
+
 
     unsigned short udp_port = server->get_udp_port();
     unsigned short tcp_port = server->get_tcp_port();

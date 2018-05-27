@@ -37,7 +37,11 @@ SOURCES += \
     src/network/tcp_server.cpp \
     src/server/movie_layer.cpp \
     src/server/network_layer.cpp \
-    src/network/udp_server.cpp
+    src/network/udp_server.cpp \
+    src/network/client.cpp \
+    src/network/protocol/message.cpp \
+    src/network/protocol/header.cpp \
+    src/network/protocol/parser.cpp
 
 HEADERS += \
     src/gui/mainwindow.h \
@@ -51,7 +55,13 @@ HEADERS += \
     src/network/tcp_server.hpp \
     src/server/movie_layer.hpp \
     src/server/network_layer.hpp \
-    src/network/udp_server.hpp
+    src/network/udp_server.hpp \
+    src/network/client.hpp \
+    src/network/protocol/message.hpp \
+    src/network/protocol/header.hpp \
+    src/network/protocol/message_type.hpp \
+    src/network/protocol/constants.hpp \
+    src/network/protocol/parser.hpp
 
 DESTDIR = bin/
 OBJECTS_DIR = bin/obj
