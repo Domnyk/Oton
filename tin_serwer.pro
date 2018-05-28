@@ -4,14 +4,15 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui testlib widgets
 
 QMAKE_CXXFLAGS += -std=c++11 -m64
 
-QT += widgets
-
 TARGET = tin_serwer
 TEMPLATE = app
+
+DEPENDPATH += . src tests bin/ui src/gui src/movie src/network src/server
+INCLUDEPATH += . src/gui src/server src/network tests src/movie
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which has been marked as deprecated (the exact warnings
@@ -26,6 +27,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += \
+    tests/test_example.cpp \
     src/main.cpp \
     src/gui/mainwindow.cpp \
     src/server/Server.cpp \
@@ -44,6 +46,7 @@ SOURCES += \
     src/network/protocol/parser.cpp
 
 HEADERS += \
+    tests/test_example.h \
     src/gui/mainwindow.h \
     src/server/Server.hpp \
     src/movie/AudioStream.hpp \
@@ -115,6 +118,7 @@ macx{
 
         INCLUDEPATH += "/usr/local/include"
 }
+
 
 
 FORMS += \
