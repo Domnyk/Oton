@@ -1,3 +1,6 @@
+#ifndef VIDEOSTREAM_HPP
+#define VIDEOSTREAM_HPP
+
 #include <string>
 #include <opencv2/core.hpp>
 #include <opencv2/videoio.hpp>
@@ -14,3 +17,5 @@ private:
 	VideoCapture videoCapture_;
  	unsigned numOfFrames;
 };
+
+#endif

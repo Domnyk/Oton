@@ -1,4 +1,5 @@
 #include <boost/bind.hpp>
+#include <iostream>
 
 #include "tcp_connection.hpp"
 
@@ -23,17 +24,21 @@ tcp_connection::tcp_connection(boost::asio::io_context& io_context) : socket_(io
 void tcp_connection::handle_write(const boost::system::error_code&, size_t) {
 }
 
-void tcp_connection::start() {
-	message_ = make_daytime_string();
+void tcp_connection::start_send(unsigned char* data, unsigned int data_length) {
+    auto me = shared_from_this();
 
-	boost::asio::async_write(
-		socket_,
-		boost::asio::buffer(message_),
-		boost::bind(
-			&tcp_connection::handle_write,
-			shared_from_this(),
-			boost::asio::placeholders::error,
-			boost::asio::placeholders::bytes_transferred
-			)
-	);
+    std::cout << "data_length: " << data_length << std::endl;
+
+    boost::asio::async_write(socket_,
+                             boost::asio::buffer(data, data_length),
+                             [=] (auto ec, std::size_t) {
+                                me->handle_send(ec);
+                             }
+    );
 }
+
+void tcp_connection::handle_send(const boost::system::error_code& ec) {
+
+}
+
+

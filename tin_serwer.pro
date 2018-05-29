@@ -6,7 +6,9 @@
 
 QT       += core gui testlib widgets
 
-QMAKE_CXXFLAGS += -std=c++11 -m64
+CONFIG += c++14
+
+QMAKE_CXXFLAGS += -std=c++14 -m64
 
 TARGET = tin_serwer
 TEMPLATE = app
@@ -43,7 +45,9 @@ SOURCES += \
     src/network/client.cpp \
     src/network/protocol/message.cpp \
     src/network/protocol/header.cpp \
-    src/network/protocol/parser.cpp
+    src/network/protocol/parser.cpp \
+    tests/test_client.cpp \
+    src/network/udp_connection.cpp
 
 HEADERS += \
     tests/test_example.h \
@@ -64,7 +68,9 @@ HEADERS += \
     src/network/protocol/header.hpp \
     src/network/protocol/message_type.hpp \
     src/network/protocol/constants.hpp \
-    src/network/protocol/parser.hpp
+    src/network/protocol/parser.hpp \
+    tests/test_client.hpp \
+    src/network/udp_connection.hpp
 
 DESTDIR = bin/
 OBJECTS_DIR = bin/obj
