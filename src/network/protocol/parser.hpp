@@ -1,6 +1,7 @@
 #ifndef PARSER_HPP
 #define PARSER_HPP
 
+#include <boost/asio.hpp>
 #include "constants.hpp"
 #include "header.hpp"
 
@@ -22,9 +23,14 @@ namespace protocol {
             return protocol::HEADER_LENGTH;
         }
 
+        boost::asio::streambuf& get_streambuf() {
+            return streambuf_;
+        }
+
         protocol::header parse_header();
     private:
         char data_[protocol::HEADER_LENGTH + protocol::MAX_BODY_LENGTH];
+        boost::asio::streambuf streambuf_;
     };
 }
 

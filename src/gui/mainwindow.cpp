@@ -5,9 +5,11 @@
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow)
+    ui(new Ui::MainWindow),
+    server_(new movie_layer())
 {
     ui->setupUi(this);
+    server_.get_movie_layer()->add_new_movie("/Users/dominiktrusinski/Programowanie/C++/Oton/data/Megamind.avi");
 }
 
 MainWindow::~MainWindow()
@@ -28,7 +30,7 @@ void MainWindow::on_btn_choose_file_clicked(bool checked)
 void MainWindow::on_btn_close_server_clicked()
 {
     // Destory object under server unique_ptr
-    server.reset(nullptr);
+    // server.reset(nullptr);
 
     // clear udp_port, tcp_port
     ui->udp_port->clear();
@@ -75,19 +77,19 @@ void MainWindow::on_btn_open_server_clicked()
     ui->btn_close_server->setEnabled(true);
     std::string host_address = ui->edit_host_address->text().toStdString();
 
-    server = std::unique_ptr<Server>(new Server(host_address));    
+    server_.init_network_layer();
 
     qRegisterMetaType<std::string>("std::string");
 
     /*
      * Connect network_layer to peer list
      */
-    QObject::connect(&server->get_network_layer(), &network_layer::user_connects,
+    QObject::connect(&(*server_.get_network_layer()), &network_layer::user_connects,
                      this, &MainWindow::non_list_peers_user_connects);
 
 
-    unsigned short udp_port = server->get_udp_port();
-    unsigned short tcp_port = server->get_tcp_port();
+    unsigned short udp_port = server_.get_udp_port();
+    unsigned short tcp_port = server_.get_tcp_port();
     ui->udp_port->setText(QString::fromStdString(to_string(udp_port)));
     ui->tcp_port->setText(QString::fromStdString(to_string(tcp_port)));
 }

@@ -40,7 +40,7 @@ private slots:
     void non_list_peers_user_connects(const std::string&);
 private:
     Ui::MainWindow *ui;
-    std::unique_ptr<Server> server;
+    Server server_;
 };
 
 #endif // MAINWINDOW_H

@@ -4,14 +4,14 @@
 #include "protocol/parser.hpp"
 #include "tcp_connection.hpp"
 #include "client.hpp"
-#include "../movie/Movie.hpp"
+#include "../server/movie_layer.hpp"
 
 using boost::asio::ip::tcp;
 
 class tcp_server
 {
 public:
-    tcp_server(boost::asio::io_context&, std::function<void(tcp::socket&)>, Movie&);
+    tcp_server(boost::asio::io_context&, std::function<void(tcp::socket&)>, unique_ptr<movie_layer>&);
 
     unsigned int port() const {
         return acceptor_.local_endpoint().port();
@@ -23,6 +23,6 @@ private:
     void handle_send();
 
     tcp::acceptor acceptor_;
-    Movie& test_movie_;
+    unique_ptr<movie_layer>& movie_layer_;
     std::function<void(tcp::socket&)> new_client_handler_;
 };

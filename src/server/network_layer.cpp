@@ -4,18 +4,14 @@
 
 const unsigned short network_layer::default_num_of_thread_for_asio = 5;
 
-network_layer::network_layer(
-    const std::string& server_addr,
-    const unsigned short threads_num)
-    : server_addr_(server_addr),
-      threads_num_(threads_num),
-      test_movie_("/Users/dominiktrusinski/Programowanie/C++/Oton/data/Megamind.avi"),
-      io_context(),
-      tcp_server_(io_context, std::bind(&network_layer::insert_new_client_tcp, std::ref(*this), std::placeholders::_1), test_movie_),
-      udp_server_(io_context, std::bind(&network_layer::insert_new_client_udp, std::ref(*this), std::placeholders::_1)),
-      threads(),
-      clients() {
-
+network_layer::network_layer(unique_ptr<movie_layer>& movie_layer, const unsigned short threads_num) :
+    threads_num_(threads_num),
+    movie_layer_(movie_layer),
+    io_context(),
+    tcp_server_(io_context, std::bind(&network_layer::insert_new_client_tcp, std::ref(*this), std::placeholders::_1), movie_layer_),
+    udp_server_(io_context, std::bind(&network_layer::insert_new_client_udp, std::ref(*this), std::placeholders::_1)),
+    threads(),
+    clients() {
     for (int i = 0; i < threads_num_; ++i) {
         threads.emplace_back(
             [&]() {

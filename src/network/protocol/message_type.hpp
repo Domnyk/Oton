@@ -5,7 +5,8 @@
 
 namespace protocol {
     enum message_type: std::uint8_t {
-        CONNECT
+        CONNECT = 0,
+        GET_FRAME = 1
     };
 
     enum { type_field_length = 8 };

@@ -9,14 +9,14 @@
 #include "../network/tcp_server.hpp"
 #include "../network/udp_server.hpp"
 #include "../network/client.hpp"
-#include "../movie/Movie.hpp"
+#include "movie_layer.hpp"
 
 class network_layer : public QObject
 {
     Q_OBJECT
 
 public:
-    network_layer(const std::string&, const unsigned short num_of_threads_for_asio = network_layer::default_num_of_thread_for_asio);
+    network_layer(unique_ptr<movie_layer>&, const unsigned short threads_num  = network_layer::default_num_of_thread_for_asio);
     ~network_layer();
 
     static const unsigned short default_num_of_thread_for_asio;
@@ -38,9 +38,9 @@ signals:
 private:
     void if_fully_connected_emit_user_connects_signal(client&);
 
-    std::string server_addr_;
+    // std::string server_addr_;
     const unsigned short threads_num_;
-    Movie test_movie_;
+    unique_ptr<movie_layer>& movie_layer_;
 
     boost::asio::io_context io_context;
     tcp_server tcp_server_;

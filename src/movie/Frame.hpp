@@ -6,6 +6,7 @@ using namespace cv;
 
 class Frame {
 public:
+    Frame(): frameNum_(0) {};
 	Frame(unsigned, Mat);
 	Frame(const Frame&);
 
@@ -25,7 +26,15 @@ public:
     unsigned int data_length() {
         return pixelMatrix_.total() * pixelMatrix_.elemSize();
     }
+
+    unsigned char* data() const {
+        return pixelMatrix_.data;
+    }
+
+    unsigned int data_length() const {
+        return pixelMatrix_.total() * pixelMatrix_.elemSize();
+    }
 private:
-	const unsigned frameNum_;
+    unsigned frameNum_;
 	Mat pixelMatrix_;
 };
