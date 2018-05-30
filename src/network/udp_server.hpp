@@ -30,7 +30,7 @@ private:
 
     void handle_connect(udp::endpoint&);
 
-    void handle_message(udp_connection::shared_pointer, protocol::header&);
+    void handle_message(udp_connection::shared_pointer, protocol::Header&);
 
 
     udp::socket socket_;

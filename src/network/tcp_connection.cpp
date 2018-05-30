@@ -40,16 +40,16 @@ void tcp_connection::handle_read(const boost::system::error_code& ec) {
         return;
     }
 
-    protocol::header header;
+    /* protocol::Header header;
     try {
         header = parser_.parse_header();
     } catch (std::invalid_argument& err) {
         std::cerr << "Received invalid header over TCP" << std::endl;
         start_read();
         return;
-    }
+    } */
 
-    switch(header.type()) {
+    /* switch(header.type()) {
         case protocol::GET_FRAME:
             // Get frame data
             std::cout << "Received header GET FRAME" << std::endl;
@@ -59,7 +59,9 @@ void tcp_connection::handle_read(const boost::system::error_code& ec) {
         default:
             std::cerr << "Unkown header type for TCP" << std::endl;
             start_read();
-    }
+    } */
+
+    start_read();
 }
 
 void tcp_connection::start_read_body_get_frame() {

@@ -31,28 +31,30 @@ void udp_server::handle_receive(boost::system::error_code& ec, std::size_t bytes
         return;
     }
 
-    protocol::header header;
+    protocol::Header header;
 
-    try {
+    /* try {
         header = handler->parser().parse_header();
     } catch (std::invalid_argument& error) {
         std::cerr << "Could not parse header received over UDP" << std::endl;
         start_receive();
         return;
-    }
+    } */
 
-    handle_message(handler, header);
+    // handle_message(handler, header);
     start_receive();
 }
 
-void udp_server::handle_message(udp_connection::shared_pointer handler, protocol::header& header) {
-    switch(header.type()) {
+void udp_server::handle_message(udp_connection::shared_pointer handler, protocol::Header& header) {
+    std::cout << "Doing nothing in udp_server handle_message. FIX IT!" << std::endl;
+
+    /* switch(header.type()) {
         case protocol::CONNECT:
             handle_connect(handler->remote_endpoint());
             break;
         default:
             std::cerr << "Unkown header type" << std::endl;
-    }
+    } */
 }
 
 void udp_server::handle_connect(udp::endpoint& remote_endpoint) {

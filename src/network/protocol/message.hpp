@@ -1,38 +1,25 @@
 #ifndef MESSAGE_HPP
 #define MESSAGE_HPP
 
-#include "header.hpp"
+#include "Header.hpp"
 
 namespace protocol {
     class message
     {
     public:
+        static const int header_length = 34;
+        static const int max_body_length = 1000000;
+
+        const unsigned char* data() const;
+        unsigned char* data();
+
+        const unsigned char* body() const;
+        unsigned char* body();
+
         message();
-
-        const char* header_data() const {
-          return header_.data();
-        }
-
-        char* header_data() {
-          return header_.data();
-        }
-
-        std::size_t header_length() const {
-            return header_.length();
-        }
-
-        header& header() {
-            return header_;
-        }
-
-        /*
-         * Convience method
-         */
-        unsigned int type() const {
-            return header_.type();
-        }
     private:
-        class header header_;
+        unsigned char data_[header_length + max_body_length] = "";
+        Header header_;
     };
 }
 #endif // MESSAGE_HPP

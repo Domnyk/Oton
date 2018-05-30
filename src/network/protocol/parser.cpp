@@ -11,7 +11,7 @@ parser::parser()
 
 }
 
-protocol::header parser::parse_header() {
+/* protocol::Header parser::parse_header() {
     std::string header(data_, protocol::HEADER_LENGTH);
 
     std::cout << "Header as string is:" << header << std::endl;
@@ -20,5 +20,5 @@ protocol::header parser::parse_header() {
 
     std::cout << "Header as int is: " << type << std::endl;
 
-    return protocol::header(type);
-}
+    return protocol::Header(type);
+} */

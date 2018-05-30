@@ -5,11 +5,14 @@
 
 namespace protocol {
     enum message_type: std::uint8_t {
-        CONNECT = 0,
-        GET_FRAME = 1
+        GET_MOVIE_LIST = 0,
+        GIVE_MOVIE_LIST = 1,
+        GET_MOVIE = 2,
+        GIVE_FRAME = 3,
+        GET_FRAME = 4,
+        MOVIE_FINISHED = 5,
+        DISCONNECT = 6
     };
-
-    enum { type_field_length = 8 };
 }
 
 #endif // MESSAGE_TYPE_H

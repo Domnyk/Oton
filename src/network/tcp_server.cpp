@@ -41,7 +41,7 @@ void tcp_server::handle_accept(std::shared_ptr<tcp_connection> handler, boost::s
 
     acceptor_.async_accept( new_handler->socket(),
                             [=](auto ec){
-                                handle_accept(new_handler, ec);
+                                this->handle_accept(new_handler, ec);
                             });
 
 }

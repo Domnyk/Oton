@@ -44,10 +44,10 @@ SOURCES += \
     src/network/udp_server.cpp \
     src/network/client.cpp \
     src/network/protocol/message.cpp \
-    src/network/protocol/header.cpp \
     src/network/protocol/parser.cpp \
     tests/test_client.cpp \
-    src/network/udp_connection.cpp
+    src/network/udp_connection.cpp \
+    src/network/protocol/Header.cpp
 
 HEADERS += \
     tests/test_example.h \
@@ -65,12 +65,12 @@ HEADERS += \
     src/network/udp_server.hpp \
     src/network/client.hpp \
     src/network/protocol/message.hpp \
-    src/network/protocol/header.hpp \
     src/network/protocol/message_type.hpp \
-    src/network/protocol/constants.hpp \
     src/network/protocol/parser.hpp \
     tests/test_client.hpp \
-    src/network/udp_connection.hpp
+    src/network/udp_connection.hpp \
+    src/network/protocol/Header.hpp \
+    src/network/protocol/Constants.hpp
 
 DESTDIR = bin/
 OBJECTS_DIR = bin/obj
