@@ -21,7 +21,7 @@ void tcp_server::start_accept() {
 
     acceptor_.async_accept( handler->socket(),
                             [=](auto ec){
-                                handle_accept(handler, ec);
+                                this->handle_accept(handler, ec);
                             });
 }
 
@@ -33,16 +33,16 @@ void tcp_server::handle_accept(std::shared_ptr<tcp_connection> handler, boost::s
 
     std::cout << "Accepted client over TCP" << std::endl;
 
-    // Do logic
-    handler->start_read();
+    // Connected client logic
+    handler->start_read_header();
     new_client_handler_(handler->socket());
 
-    auto new_handler = tcp_connection::create(acceptor_.get_executor().context(), movie_layer_);
 
+    // Continiue accepting
+    auto new_handler = tcp_connection::create(acceptor_.get_executor().context(), movie_layer_);
     acceptor_.async_accept( new_handler->socket(),
                             [=](auto ec){
                                 this->handle_accept(new_handler, ec);
                             });
-
 }
 

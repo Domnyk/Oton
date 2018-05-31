@@ -29,6 +29,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += \
+    tests/ClientTest.cpp \
     tests/test_example.cpp \
     src/main.cpp \
     src/gui/mainwindow.cpp \
@@ -43,13 +44,13 @@ SOURCES += \
     src/server/network_layer.cpp \
     src/network/udp_server.cpp \
     src/network/client.cpp \
-    src/network/protocol/message.cpp \
     src/network/protocol/parser.cpp \
-    tests/test_client.cpp \
     src/network/udp_connection.cpp \
-    src/network/protocol/Header.cpp
+    src/network/protocol/Header.cpp \
+    src/network/protocol/Message.cpp
 
 HEADERS += \
+    tests/ClientTest.hpp \
     tests/test_example.h \
     src/gui/mainwindow.h \
     src/server/Server.hpp \
@@ -64,13 +65,24 @@ HEADERS += \
     src/server/network_layer.hpp \
     src/network/udp_server.hpp \
     src/network/client.hpp \
-    src/network/protocol/message.hpp \
     src/network/protocol/message_type.hpp \
     src/network/protocol/parser.hpp \
-    tests/test_client.hpp \
     src/network/udp_connection.hpp \
     src/network/protocol/Header.hpp \
-    src/network/protocol/Constants.hpp
+    src/network/protocol/Constants.hpp \
+    src/network/protocol/Message.hpp
+
+test {
+    message(Test build)
+
+    SOURCES -= src/main.cpp
+    SOURCES += tests/tests_main.cpp \
+            tests/HeaderTest.cpp \
+
+    HEADERS += tests/HeaderTest.hpp \
+} else {
+    message(Standard build)
+}
 
 DESTDIR = bin/
 OBJECTS_DIR = bin/obj
@@ -124,8 +136,6 @@ macx{
 
         INCLUDEPATH += "/usr/local/include"
 }
-
-
 
 FORMS += \
         src/gui/mainwindow.ui

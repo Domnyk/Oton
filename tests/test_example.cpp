@@ -14,5 +14,5 @@ void test_example::checkFalseStatement()
     QCOMPARE(x, 2);
 }
 
-//QTEST_MAIN(test_example)
-#include "bin/moc/moc_test_example.cpp"
+// QTEST_MAIN(test_example)
+// #include "bin/moc/moc_test_example.cpp"
