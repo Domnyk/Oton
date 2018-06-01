@@ -28,6 +28,8 @@ private:
 	void handle_write(const boost::system::error_code&, size_t);
     void handle_read();
 
+    protocol::message_type process_confirmation();
+
 
     protocol::Message message_;
     unique_ptr<movie_layer>& movie_layer_;

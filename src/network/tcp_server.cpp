@@ -1,5 +1,6 @@
 #include <boost/bind.hpp>
 #include <iostream>
+#include <thread>
 
 #include "tcp_connection.hpp"
 #include "tcp_server.hpp"
@@ -34,7 +35,10 @@ void tcp_server::handle_accept(std::shared_ptr<tcp_connection> handler, boost::s
     std::cout << "Accepted client over TCP" << std::endl;
 
     // Connected client logic
-    handler->start_read();
+    std::thread t([=](){
+        handler->start_read();
+    });
+    t.detach();
     new_client_handler_(handler->socket());
 
 
