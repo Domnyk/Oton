@@ -22,11 +22,12 @@ public:
     void delete_movie(const string&);
     Movie& get_movie(const string&);
 
+    bool is_movie_loaded(const string&);
+    std::string get_movie_filename(const string&);
+
     std::string get_movie_list();
 
 private:
-    bool is_movie_loaded(const string&);
-
     movies movies_;
 };
 
