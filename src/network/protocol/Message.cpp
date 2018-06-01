@@ -3,6 +3,8 @@
 
 using namespace protocol;
 
+const std::string Message::END_TAG = "~!";
+
 Message::Message() : header_(data_) {
 
 }
@@ -34,14 +36,32 @@ const Header& Message::get_header() const {
    return header_;
 }
 
+void Message::set_data(const std::string& data_str) {
+    size_t str_size = data_str.size();
+    if (str_size > Message::HEADER_LENGTH + Message::MAX_BODY_LENGTH) {
+        throw std::runtime_error("Msg size too larger");
+    }
+
+    const char* data_c_str = data_str.c_str();
+    strcpy(data_, data_c_str);
+}
+
 void Message::set_body(const std::string& str) {
-    size_t str_size = str.size();
-    if (str_size > Message::MAX_BODY_LENGTH) {
+    size_t str_size = str.size(),
+           end_tag_size = Message::END_TAG.size();
+
+
+    if (str_size > Message::MAX_BODY_LENGTH + end_tag_size) {
         throw std::runtime_error("Body size too larger");
     }
 
-    header_.set_body_len(str_size);
+    header_.set_body_len(str_size + end_tag_size);
 
-    const char* c_str = str.c_str();
+    std::string data_with_end_tag = str + Message::END_TAG;
+    const char* c_str = data_with_end_tag.c_str();
     strcpy(data_ + Message::HEADER_LENGTH, c_str);
+}
+
+void Message::set_body(char* data) {
+    strcpy(data_ + Message::HEADER_LENGTH, data);
 }

@@ -27,7 +27,7 @@ public:
         return pixelMatrix_.total() * pixelMatrix_.elemSize();
     }
 
-    unsigned char* data() const {
+    unsigned const char* data() const {
         return pixelMatrix_.data;
     }
 

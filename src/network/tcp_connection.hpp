@@ -15,21 +15,22 @@ public:
     static shared_pointer create(boost::asio::io_context&, unique_ptr<movie_layer>&);
 	tcp::socket& socket();
 
-    void start_read_header();
+    void start_read();
 private:
     tcp_connection(boost::asio::io_context&, unique_ptr<movie_layer>&);
 
     void handle_get_movie_list();
-    // void handle_get_movie();
+    void handle_get_movie();
     void handle_get_frame();
     /* void handle_movie_finished();
     void handle_disconnect(); */
 
 	void handle_write(const boost::system::error_code&, size_t);
-    void handle_read_header();
+    void handle_read();
 
 
     protocol::Message message_;
     unique_ptr<movie_layer>& movie_layer_;
 	tcp::socket socket_;
+    boost::asio::streambuf in_packet_;
 };

@@ -42,7 +42,5 @@ std::string movie_layer::get_movie_list() {
         movie_list += "\n";
     }
 
-    movie_list += "\r\n\r\n";
-
     return movie_list;
 }

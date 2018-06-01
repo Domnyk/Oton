@@ -34,7 +34,7 @@ void tcp_server::handle_accept(std::shared_ptr<tcp_connection> handler, boost::s
     std::cout << "Accepted client over TCP" << std::endl;
 
     // Connected client logic
-    handler->start_read_header();
+    handler->start_read();
     new_client_handler_(handler->socket());
 
 

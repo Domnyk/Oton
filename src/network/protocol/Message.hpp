@@ -1,6 +1,7 @@
 #ifndef MESSAGE_HPP
 #define MESSAGE_HPP
 
+#include <string>
 #include "Header.hpp"
 
 namespace protocol {
@@ -9,6 +10,7 @@ namespace protocol {
     public:
         static const int HEADER_LENGTH = 34;
         static const int MAX_BODY_LENGTH = 1000000;
+        static const std::string END_TAG;
 
         Message();
         Message(protocol::message_type, unsigned int body_len);
@@ -19,6 +21,8 @@ namespace protocol {
         const char* body() const;
         char* body();
 
+        void set_data(const std::string&);
+
         Header& get_header();
         const Header& get_header() const;
 
@@ -27,6 +31,7 @@ namespace protocol {
         }
 
         void set_body(const std::string&);
+        void set_body(char*);
     private:
         char data_[HEADER_LENGTH + MAX_BODY_LENGTH] = "";
         Header header_;
