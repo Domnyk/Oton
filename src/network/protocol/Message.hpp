@@ -10,7 +10,6 @@ namespace protocol {
     public:
         static const int HEADER_LENGTH = 34;
         static const int MAX_BODY_LENGTH = 1000000;
-        static const std::string END_TAG;
 
         Message();
         Message(protocol::message_type, unsigned int body_len);
@@ -32,6 +31,7 @@ namespace protocol {
 
         void set_body(const std::string&);
         void set_body(char*);
+        void set_body(unsigned char*, unsigned int);
     private:
         char data_[HEADER_LENGTH + MAX_BODY_LENGTH] = "";
         Header header_;

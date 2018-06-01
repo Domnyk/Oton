@@ -151,6 +151,7 @@ void Header::set_msg_type(message_type msg_type) {
 }
 
 void Header::set_body_len(unsigned int body_len) {
+    std::cout << "ARG to set_body_len: " << body_len << std::endl;
     body_len_ = body_len;
 }
 

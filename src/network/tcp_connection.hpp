@@ -15,7 +15,7 @@ public:
     static shared_pointer create(boost::asio::io_context&, unique_ptr<movie_layer>&);
 	tcp::socket& socket();
 
-    void start_read();
+    void start_read_header();
 private:
     tcp_connection(boost::asio::io_context&, unique_ptr<movie_layer>&);
 
@@ -26,7 +26,7 @@ private:
     void handle_disconnect(); */
 
 	void handle_write(const boost::system::error_code&, size_t);
-    void handle_read();
+    void handle_read_header();
 
 
     protocol::Message message_;

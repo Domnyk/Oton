@@ -6,7 +6,7 @@
 using namespace std;
 
 Frame::Frame(unsigned frameNum, Mat pixelMatrix) :
-	frameNum_(frameNum), pixelMatrix_(pixelMatrix) {
+    frameNum_(frameNum), pixelMatrix_(pixelMatrix.clone()) {
 }
 
 Frame::Frame(const Frame& otherFrame) :

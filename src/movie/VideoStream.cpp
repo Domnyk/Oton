@@ -32,8 +32,11 @@ Frame VideoStream::getFrame(unsigned frameNum) {
 		throw runtime_error(errorMsg);
 	}
 
+
 	Mat frameData;
 	videoCapture_.set(CAP_PROP_POS_FRAMES, frameNum);
 	videoCapture_ >> frameData;
+
+    std::cout << "Frame data from getFrame func: " << *(frameData.data) << std::endl;
 	return Frame(frameNum, frameData);
 }

@@ -18,10 +18,10 @@ tcp::socket& tcp_connection::socket() {
 	return socket_;
 }
 
-void tcp_connection::start_read() {
+void tcp_connection::start_read_header() {
     auto me = shared_from_this();
 
-    boost::asio::async_read_until(socket_,
+    /* boost::asio::async_read_until(socket_,
                                   in_packet_,
                                   protocol::Message::END_TAG,
                                   [=](auto& ec, std::size_t bytes_rcvd) {
@@ -32,26 +32,27 @@ void tcp_connection::start_read() {
 
                                     me->handle_read();
                                   }
+    ); */
+
+    boost::asio::async_read(socket_,
+                            boost::asio::buffer(message_.data(), protocol::Message::HEADER_LENGTH),
+                            [=](auto& ec, std::size_t /* bytes_rcvd */) {
+                                if (ec) {
+                                    std::cerr << "Error with code: " << ec.value() << std::endl;
+                                    return;
+                                }
+
+                                me->handle_read_header();
+                            }
     );
 }
 
-void tcp_connection::handle_read() {
-    std::istream stream(&in_packet_);
-    std::string packet_string;
-    stream >> packet_string;
-    std::cout << "Packet string: " << packet_string << std::endl;
-
-    size_t end_tag_pos = packet_string.find(protocol::Message::END_TAG);
-    if (end_tag_pos == string::npos) {
-        throw std::runtime_error("No delimiter in received message");
-    }
-
-    packet_string.erase(end_tag_pos);
-
-    message_.set_data(packet_string);
+void tcp_connection::handle_read_header() {
     message_.get_header().parse();
 
     auto msg_type = message_.get_header().get_msg_type();
+    std::cout << "msg_type is: " << msg_type << std::endl;
+
     switch (msg_type) {
     case protocol::GET_MOVIE_LIST:
         handle_get_movie_list();
@@ -73,29 +74,41 @@ void tcp_connection::handle_read() {
 
 void tcp_connection::handle_get_movie_list() {
     auto me = shared_from_this();
+    protocol::Header& header = message_.get_header();
+    std::string movie_list = movie_layer_->get_movie_list();
 
-    string movie_list = movie_layer_->get_movie_list();
+    // Prepare header - only relevant headers
+    header.set_msg_type(protocol::GIVE_MOVIE_LIST);
+    header.set_body_len(movie_list.size());
 
-    // Prepare header
+
+    // Send header
+    boost::asio::async_write(socket_,
+                             boost::asio::buffer(message_.data(), message_.msg_len()))
+
+    //string movie_list = movie_layer_->get_movie_list();
+
+    /* Prepare header
     message_.get_header().set_msg_type(protocol::GIVE_MOVIE_LIST);
     message_.get_header().set_body_len(0);
     message_.get_header().encode();
+    */
 
     // Prepare body
-    message_.set_body(movie_list);
+    //message_.set_body(movie_list);
 
-    boost::asio::async_write(socket_,
+    /* boost::asio::async_write(socket_,
                              boost::asio::buffer(message_.data(), message_.msg_len()),
-                             [me](auto& ec, auto /* bytes_transferred */) {
+                             [me](auto& ec, auto bytes_transferred) {
                                 if(ec) {
                                     std::cerr << "Error during transmission" << std::endl;
                                     return;
                                 }
 
                                 std::cout << "Data has been send" << std::endl;
-                                me->start_read();
+                                me->start_read_header();
                              }
-    );
+    ); */
 }
 
 void tcp_connection::handle_get_frame() {
@@ -105,29 +118,33 @@ void tcp_connection::handle_get_frame() {
                                 .resize(Resolution::get144p());
 
     message_.get_header().set_msg_type(protocol::GIVE_FRAME);
-    message_.get_header().set_body_len(frame.data_length());
+    // message_.get_header().set_body_len(frame.data_length());
     message_.get_header().set_num_of_cols(frame.getSize().width);
     message_.get_header().set_num_of_rows(frame.getSize().height);
+    message_.get_header().encode();
     // Frame number is already set
     // Ignore num of frames for now
     std::cerr << "Add num of frames header" << std::endl;
 
-    message_.set_body((char*)frame.data());
+    message_.set_body(frame.data(), frame.data_length());
 
     /* std::cout << "Data length: " << frame.data_length() << std::endl;
     std::cout << "Rows: " << frame.getPixelMatrix().rows << std::endl;
     std::cout << "Cols: " << frame.getPixelMatrix().cols << std::endl; */
 
+    std::cout << "Message len is: " << message_.msg_len() << std::endl;
+
     auto me = shared_from_this();
     boost::asio::async_write(socket_,
-                             boost::asio::buffer(frame.data(), frame.data_length()),
-                             [=](auto& ec, unsigned int /* bytes_transferred */) {
+                             boost::asio::buffer(message_.data(), message_.msg_len()),
+                             [=](auto& ec, unsigned int bytes_transferred) {
                                 if(ec) {
                                     std::cout << "Error occured during sending" << std::endl;
                                     return;
                                 }
 
-                                me->start_read();
+                                std::cout << "Transferred: " << bytes_transferred << std::endl;
+                                me->start_read_header();
                              }
     );
 }
@@ -147,14 +164,14 @@ void tcp_connection::handle_get_movie() {
 
     auto me = shared_from_this();
     boost::asio::async_write(socket_,
-                             boost::asio::buffer(frame.data(), frame.data_length()),
+                             boost::asio::buffer(message_.data(), message_.msg_len()),
                              [=](auto& ec, unsigned int /* bytes_transferred */) {
                                 if(ec) {
                                     std::cout << "Error occured during sending" << std::endl;
                                     return;
                                 }
 
-                                me->start_read();
+                                me->start_read_header();
                              }
     );
 }
