@@ -9,7 +9,6 @@ MainWindow::MainWindow(QWidget *parent) :
     server_(new movie_layer())
 {
     ui->setupUi(this);
-    server_.get_movie_layer()->add_new_movie("/Users/dominiktrusinski/Programowanie/C++/Oton/data/Megamind.avi");
 }
 
 MainWindow::~MainWindow()
@@ -24,23 +23,31 @@ void MainWindow::on_edit_host_address_textChanged(const QString &arg1)
 
 void MainWindow::on_btn_choose_file_clicked(bool checked)
 {
-    ui->label_ip_address->setText(QFileDialog::getOpenFileName(this, "test", QString(), tr("Movies (*.h *.cpp)")));
+    string filePath = QFileDialog::getOpenFileName(this, "Add movie", QString(), tr("Movies (*.avi *.mp4)")).toStdString();
+    string fileName = server_.get_movie_layer()->get_movie_filename(filePath);
+
+    if(server_.get_movie_layer()->is_movie_loaded(fileName)) {
+        return;
+    }
+
+    server_.get_movie_layer()->add_new_movie(filePath);
+    ui->list_movies->addItem(QString::fromStdString(fileName));
 }
 
 void MainWindow::on_btn_close_server_clicked()
 {
-    // Destory object under server unique_ptr
-    // server.reset(nullptr);
+    // Close server - close all connections
 
-    // clear udp_port, tcp_port
+    //
+
+    ui->btn_choose_file->setEnabled(true);
+    ui->btn_delete_movie->setEnabled(true);
+
     ui->udp_port->clear();
     ui->tcp_port->clear();
 
-    // clear list of movies and list of peers
-    ui->list_movies->clear();
     ui->list_peers->clear();
 
-    // Enable start server btn
     ui->btn_open_server->setEnabled(true);
 }
 
@@ -51,7 +58,15 @@ void MainWindow::on_btn_choose_file_clicked()
 
 void MainWindow::on_btn_delete_movie_clicked()
 {
+    QList<QListWidgetItem*> selectedItems = ui->list_movies->selectedItems();
 
+    for(int i = 0; i < selectedItems.size(); ++i) {
+        QString movie_name = selectedItems[i]->text();
+
+        server_.get_movie_layer()->delete_movie(movie_name.toStdString());
+    }
+
+    qDeleteAll(selectedItems);
 }
 
 void MainWindow::on_btn_kick_peer_clicked()
@@ -65,14 +80,16 @@ void MainWindow::on_btn_show_details_clicked()
 }
 
 void MainWindow::non_list_peers_user_connects(const std::string& ip) {
-    std::cout << "IP is: " << ip << std::endl;
-
     ui->list_peers->addItem(QString::fromStdString(ip));
     ui->list_peers->update();
 }
 
 void MainWindow::on_btn_open_server_clicked()
 {
+    // No adding or deleting movies when network is up
+    ui->btn_choose_file->setEnabled(false);
+    ui->btn_delete_movie->setEnabled(false);
+
     ui->btn_open_server->setEnabled(false);
     ui->btn_close_server->setEnabled(true);
     std::string host_address = ui->edit_host_address->text().toStdString();
