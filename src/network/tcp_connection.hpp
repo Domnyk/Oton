@@ -28,7 +28,16 @@ private:
 	void handle_write(const boost::system::error_code&, size_t);
     void handle_read();
 
-    protocol::message_type process_confirmation();
+    protocol::message_type read_confirmation();
+    bool is_confirmation_correct(protocol::message_type msg_type, protocol::message_type confirmation);
+
+    void read_header();
+    void send_confirmation(protocol::message_type);
+    void read_body();
+
+    void send_header();
+    void send_body();
+
 
 
     protocol::Message message_;

@@ -63,3 +63,7 @@ void Message::set_body(const std::string& str) {
 void Message::set_body(char* data) {
     strcpy(data_ + Message::HEADER_LENGTH, data);
 }
+
+void Message::set_body(unsigned char* data) {
+    memcpy(data_ + Message::HEADER_LENGTH, data, header_.get_body_len());
+}

@@ -20,14 +20,15 @@ tcp::socket& tcp_connection::socket() {
 }
 
 void tcp_connection::start_read() {
+
     try {
-        boost::asio::read(socket_, boost::asio::buffer(message_.data(), protocol::Message::HEADER_LENGTH));
-    } catch (boost::system::system_error& err) {
-        std::cerr << "An error occured during socket read: " << err.what() << std::endl;
+        read_header();
+    } catch (boost::system::system_error& ec) {
+        std::cerr << "An error occured during header reading: " << ec.what()  << ". Exiting." << std::endl;
         return;
     }
-
     message_.get_header().parse();
+
     auto msg_type = message_.get_header().get_msg_type();
     switch (msg_type) {
     case protocol::GET_MOVIE_LIST:
@@ -50,45 +51,22 @@ void tcp_connection::start_read() {
     start_read();
 }
 
-void tcp_connection::handle_read() {
-    /* std::istream stream(&in_packet_);
-    std::string packet_string;
-    stream >> packet_string;
-    std::cout << "Packet string: " << packet_string << std::endl;
-
-    size_t end_tag_pos = packet_string.find(protocol::Message::END_TAG);
-    if (end_tag_pos == string::npos) {
-        throw std::runtime_error("No delimiter in received message");
-    }
-
-    packet_string.erase(end_tag_pos);
-
-    message_.set_data(packet_string);
-    message_.get_header().parse(); */
-}
-
 void tcp_connection::handle_get_movie_list() {
     string movie_list = movie_layer_->get_movie_list();
+    protocol::message_type msg_type = protocol::GIVE_MOVIE_LIST;
 
-    message_.get_header().set_msg_type(protocol::GIVE_MOVIE_LIST);
+    message_.get_header().set_msg_type(msg_type);
     message_.get_header().set_body_len(movie_list.size());
     message_.get_header().encode();
     try {
-        boost::asio::write(socket_, boost::asio::buffer(message_.data(), protocol::Message::HEADER_LENGTH));
+        send_header();
     } catch (boost::system::system_error& err) {
         std::cerr << "An error occured during socket write: " << err.what() << std::endl;
     }
 
-    protocol::message_type confirmation_num;
-    try {
-        confirmation_num = process_confirmation();
-    } catch (std::invalid_argument& err) {
-        std::cerr << "Could not convert confirmation number. Exiting" << std::endl;
-        return;
-    }
-
-    if(!(confirmation_num == protocol::GIVE_MOVIE_LIST)) {
-        std::cerr << "Wrong confirmation number. Exiting" << std::endl;
+    protocol::message_type confirmation = read_confirmation();
+    if (!is_confirmation_correct(msg_type, confirmation)) {
+        std::cerr << "Bad confirmation. Exiting" << std::endl;
         return;
     }
 
@@ -97,6 +75,51 @@ void tcp_connection::handle_get_movie_list() {
         boost::asio::write(socket_, boost::asio::buffer(message_.body(), message_.msg_len() - protocol::Message::HEADER_LENGTH));
     } catch (boost::system::system_error& err) {
         std::cerr << "An error occured during socket write: " << err.what() << std::endl;
+    }
+}
+
+void tcp_connection::handle_get_movie() {
+    send_confirmation(protocol::message_type::GET_MOVIE);
+    read_body();
+
+    std::string movie_name = std::string(message_.body(), message_.get_header().get_body_len());
+    std::cerr << "Movie name is: " << movie_name << std::endl;
+
+    Frame frame;
+    unsigned int numOfFrames;
+    try {
+       frame = movie_layer_->get_movie(movie_name)
+                             .videoStream()
+                             .getFrame(100)
+                             .resize(Resolution::get360p());
+
+       numOfFrames = movie_layer_->get_movie(movie_name)
+                                   .videoStream().get_num_of_frames();
+    } catch (std::out_of_range& err) {
+        std::cerr << "No such movie on server. Exiting" << std::endl;
+        return;
+    }
+
+    message_.get_header().set_msg_type(protocol::GIVE_FRAME);
+    message_.get_header().set_body_len(frame.data_length());
+    message_.get_header().set_num_of_cols(frame.getSize().width);
+    message_.get_header().set_num_of_rows(frame.getSize().height);
+    message_.get_header().set_frame_num(0);
+    message_.get_header().set_num_of_frames(numOfFrames);
+    message_.get_header().encode();
+    send_header();
+
+    protocol::message_type confirmation = read_confirmation();
+    if(!is_confirmation_correct(protocol::GIVE_FRAME, confirmation)) {
+        std::cerr << "Wrong confirmation number. Exiting" << std::endl;
+        return;
+    }
+
+    message_.set_body(frame.data());
+    try {
+        send_body();
+    } catch (boost::system::system_error& err) {
+        std::cerr << "An error occured during frame data writing: " << err.what() << std::endl;
     }
 }
 
@@ -110,83 +133,85 @@ void tcp_connection::handle_get_frame() {
     message_.get_header().set_body_len(frame.data_length());
     message_.get_header().set_num_of_cols(frame.getSize().width);
     message_.get_header().set_num_of_rows(frame.getSize().height);
+    message_.get_header().encode();
     // Frame number is already set
     // Ignore num of frames for now
     std::cerr << "Add num of frames header" << std::endl;
+    std::cerr << "Body len: " << message_.get_header().get_body_len() << std::endl;
 
-    message_.set_body((char*)frame.data());
+    send_header();
 
-    /* std::cout << "Data length: " << frame.data_length() << std::endl;
-    std::cout << "Rows: " << frame.getPixelMatrix().rows << std::endl;
-    std::cout << "Cols: " << frame.getPixelMatrix().cols << std::endl; */
 
-    auto me = shared_from_this();
+
+
+    // message_.set_body((char*)frame.data());
+
+    /* std::cerr << "Data length: " << frame.data_length() << std::endl;
+    std::cerr << "Rows: " << frame.getPixelMatrix().rows << std::endl;
+    std::cerr << "Cols: " << frame.getPixelMatrix().cols << std::endl; */
+
+    /* auto me = shared_from_this();
     boost::asio::async_write(socket_,
                              boost::asio::buffer(frame.data(), frame.data_length()),
-                             [=](auto& ec, unsigned int /* bytes_transferred */) {
+                             [=](auto& ec, unsigned int bytes_transferred) {
                                 if(ec) {
-                                    std::cout << "Error occured during sending" << std::endl;
+                                    std::cerr << "Error occured during sending" << std::endl;
                                     return;
                                 }
 
                                 me->start_read();
                              }
-    );
+    ); */
 }
 
-void tcp_connection::handle_get_movie() {
-    Frame frame = movie_layer_->get_movie("Megamind.avi")
-                                .videoStream()
-                                .getFrame(0)
-                                .resize(Resolution::get144p());
-
-    message_.get_header().set_msg_type(protocol::GIVE_FRAME);
-    message_.get_header().set_body_len(frame.data_length());
-    message_.get_header().set_num_of_cols(frame.getSize().width);
-    message_.get_header().set_num_of_rows(frame.getSize().height);
-
-    message_.set_body((char*)frame.data());
-
-    auto me = shared_from_this();
-    boost::asio::async_write(socket_,
-                             boost::asio::buffer(frame.data(), frame.data_length()),
-                             [=](auto& ec, unsigned int /* bytes_transferred */) {
-                                if(ec) {
-                                    std::cout << "Error occured during sending" << std::endl;
-                                    return;
-                                }
-
-                                me->start_read();
-                             }
-    );
-}
-
-protocol::message_type tcp_connection::process_confirmation() {
+protocol::message_type tcp_connection::read_confirmation() {
     char confirmation[protocol::FieldLength::msg_type + 1] = "";
 
     try {
-        boost::asio::read(socket_, boost::asio::buffer(confirmation, 2));
+        boost::asio::read(socket_, boost::asio::buffer(confirmation, protocol::FieldLength::msg_type));
     } catch (boost::system::system_error& err) {
-        std::cerr << "An error occured during confirmation read: " << err.what() << std::endl;
+        std::cerr << "An error occured during confirmation reading: " << err.what() << std::endl;
     }
 
     auto confirmation_num = std::stoi(std::string(confirmation));
     return static_cast<protocol::message_type>(confirmation_num);
 }
 
-/* void tcp_connection::start_read_body_get_frame() {
-    std::cout << "TCP: start_read_body_get_frame" << std::endl;
+void tcp_connection::send_confirmation(protocol::message_type msg_type) {
+    std::string confirmation = "0" + to_string(msg_type);
 
-    auto me = shared_from_this();
+    try {
+        boost::asio::write(socket_, boost::asio::buffer(confirmation.c_str(), protocol::FieldLength::msg_type));
+    } catch (boost::system::system_error& err) {
+        std::cerr << "An error occured during confirmation sending: " << err.what() << std::endl;
+    }
+}
 
-     boost::asio::async_read_until(socket_,
-                                  parser_.get_streambuf(),
-                                  '\n',
-                                  [me](const boost::system::error_code& e, std::size_t size) {
-                                    me->handle_read_body_get_frame();
-                                  }
-    );
-} */
+bool tcp_connection::is_confirmation_correct(protocol::message_type msg_type, protocol::message_type confirmation) {
+    return msg_type == confirmation;
+}
+
+void tcp_connection::read_header() {
+    boost::asio::read(socket_, boost::asio::buffer(message_.data(), protocol::Message::HEADER_LENGTH));
+}
+
+void tcp_connection::read_body() {
+    try {
+        boost::asio::read(socket_, boost::asio::buffer(message_.body(), message_.get_header().get_body_len()));
+    } catch (boost::system::system_error& err) {
+        std::cerr << "An error occured during body reading: " << err.what() << std::endl;
+        return;
+    }
+}
+
+
+void tcp_connection::send_header() {
+    boost::asio::write(socket_, boost::asio::buffer(message_.data(), protocol::Message::HEADER_LENGTH));
+}
+
+void tcp_connection::send_body() {
+    boost::asio::write(socket_, boost::asio::buffer(message_.body(), message_.msg_len() - protocol::Message::HEADER_LENGTH));
+}
 
 /*void tcp_connection::handle_read_body_get_frame() {
     auto me = shared_from_this();
@@ -200,9 +225,9 @@ protocol::message_type tcp_connection::process_confirmation() {
     try {
         frame_num = std::stoi(body_string);
         frame = movie_layer_->get_movie("Megamind.avi").videoStream().getFrame(frame_num).resize(Resolution::get360p());
-        std::cout << "Data length: " << frame.data_length() << std::endl;
-        std::cout << "Rows: " << frame.getPixelMatrix().rows << std::endl;
-        std::cout << "Cols: " << frame.getPixelMatrix().cols << std::endl;
+        std::cerr << "Data length: " << frame.data_length() << std::endl;
+        std::cerr << "Rows: " << frame.getPixelMatrix().rows << std::endl;
+        std::cerr << "Cols: " << frame.getPixelMatrix().cols << std::endl;
 
 
     } catch (std::invalid_argument& e) {
@@ -212,10 +237,10 @@ protocol::message_type tcp_connection::process_confirmation() {
      socket_.async_send(boost::asio::buffer(frame.data(), frame.data_length()),
                        [me](auto& ec, auto bytes_transferred) {
                         if(ec) {
-                            std::cout << "Error occured during sending" << std::endl;
+                            std::cerr << "Error occured during sending" << std::endl;
                             return;
                         }
-                            std::cout << "Transferred: " << bytes_transferred << std::endl;
+                            std::cerr << "Transferred: " << bytes_transferred << std::endl;
                             me->start_read();
                         }
     );
@@ -223,10 +248,10 @@ protocol::message_type tcp_connection::process_confirmation() {
      boost::asio::async_write(socket_, boost::asio::buffer(frame.data(), frame.data_length()),
                             [me](auto& ec, auto bytes_transferred) {
                             if(ec) {
-                                std::cout << "Error occured during sending" << std::endl;
+                                std::cerr << "Error occured during sending" << std::endl;
                                 return;
                              }
-                                std::cout << "Transferred: " << bytes_transferred << std::endl;
+                                std::cerr << "Transferred: " << bytes_transferred << std::endl;
                                 me->start_read();
                             }
     )
