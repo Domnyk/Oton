@@ -90,7 +90,7 @@ void tcp_connection::handle_get_movie() {
     try {
        frame = movie_layer_->get_movie(movie_name)
                              .videoStream()
-                             .getFrame(100)
+                             .getFrame(0)
                              .resize(Resolution::get360p());
 
        numOfFrames = movie_layer_->get_movie(movie_name)
