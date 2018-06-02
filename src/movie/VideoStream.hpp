@@ -13,6 +13,10 @@ public:
 	VideoStream(const std::string&);
 	void open(const std::string&);
 	Frame getFrame(unsigned);
+
+    unsigned get_num_of_frames() {
+        return numOfFrames;
+    }
 private:
 	VideoCapture videoCapture_;
  	unsigned numOfFrames;

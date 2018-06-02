@@ -31,7 +31,7 @@ namespace protocol {
 
         void set_body(const std::string&);
         void set_body(char*);
-        void set_body(unsigned char*, unsigned int);
+        void set_body(unsigned char*);
     private:
         char data_[HEADER_LENGTH + MAX_BODY_LENGTH] = "";
         Header header_;

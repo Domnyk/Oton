@@ -1,5 +1,6 @@
 #include <boost/bind.hpp>
 #include <iostream>
+#include <thread>
 
 #include "tcp_connection.hpp"
 #include "tcp_server.hpp"
@@ -19,7 +20,7 @@ tcp_server::tcp_server(boost::asio::io_context& io_context,
 void tcp_server::start_accept() {
     auto handler = tcp_connection::create(acceptor_.get_executor().context(), movie_layer_);
 
-    acceptor_.async_accept( handler->socket(),
+    acceptor_.async_accept( handler->get_socket(),
                             [=](auto ec){
                                 this->handle_accept(handler, ec);
                             });
@@ -31,16 +32,19 @@ void tcp_server::handle_accept(std::shared_ptr<tcp_connection> handler, boost::s
         return;
     }
 
-    std::cout << "Accepted client over TCP" << std::endl;
+    std::cerr << "Accepted client over TCP" << std::endl;
 
     // Connected client logic
-    handler->start_read_header();
-    new_client_handler_(handler->socket());
+    std::thread t([=](){
+        handler->read();
+    });
+    t.detach();
+    new_client_handler_(handler->get_socket());
 
 
     // Continiue accepting
     auto new_handler = tcp_connection::create(acceptor_.get_executor().context(), movie_layer_);
-    acceptor_.async_accept( new_handler->socket(),
+    acceptor_.async_accept( new_handler->get_socket(),
                             [=](auto ec){
                                 this->handle_accept(new_handler, ec);
                             });
