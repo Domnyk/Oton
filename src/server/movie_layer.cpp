@@ -15,7 +15,7 @@ void movie_layer::add_new_movie(const string& movie_path) {
     Movie movie(movie_path);
     movies_.emplace(movie_filename, movie);
 
-    std::cout << "Movie: " << movie_filename << " has been added" << std::endl;
+    std::cerr << "Movie: " << movie_filename << " has been added" << std::endl;
 }
 
 void movie_layer::delete_movie(const string& movie_filename) {
