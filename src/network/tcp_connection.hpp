@@ -8,7 +8,7 @@
 
 using boost::asio::ip::tcp;
 
-class tcp_connection : public std::enable_shared_from_this<tcp_connection> {
+class tcp_connection {
 public:
     typedef std::shared_ptr<tcp_connection> shared_pointer;
 
@@ -22,8 +22,8 @@ private:
     void handle_get_movie_list();
     void handle_get_movie();
     void handle_get_frame();
-    /* void handle_movie_finished();
-    void handle_disconnect(); */
+    void handle_movie_finished();
+    void handle_disconnect();
 
     void read_header();
     void read_body();

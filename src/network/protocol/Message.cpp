@@ -9,9 +9,6 @@ Message::Message() : header_(data_) {
 
 }
 
-Message::Message(message_type message_type, unsigned int body_len) /*: header_(data_, message_type, body_len) */ {
-}
-
 const char* Message::data() const {
     return data_;
 }
@@ -58,15 +55,6 @@ void Message::set_body(const std::string& str) {
 
     const char* c_str = str.c_str();
     strcpy(data_ + Message::HEADER_LENGTH, c_str);
-}
-
-void Message::set_body(char* data) {
-    /* std::string str = std::string(data);
-    str += Message::END_TAG;
-
-    header_.set_body_len(str.size());
-
-    strcpy(data_ + Message::HEADER_LENGTH, str.c_str()); */
 }
 
 void Message::set_body(unsigned char* data) {

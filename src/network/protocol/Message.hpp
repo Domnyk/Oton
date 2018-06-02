@@ -12,7 +12,6 @@ namespace protocol {
         static const int MAX_BODY_LENGTH = 1000000;
 
         Message();
-        Message(protocol::message_type, unsigned int body_len);
 
         const char* data() const;
         char* data();
@@ -30,7 +29,6 @@ namespace protocol {
         }
 
         void set_body(const std::string&);
-        void set_body(char*);
         void set_body(unsigned char*);
     private:
         char data_[HEADER_LENGTH + MAX_BODY_LENGTH] = "";

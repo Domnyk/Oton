@@ -12,8 +12,8 @@ tcp_server::tcp_server(boost::asio::io_context& io_context,
                        std::function<void(tcp::socket&)> new_client_handler,
                        unique_ptr<movie_layer>& movie_layer)
     : acceptor_(io_context, tcp::endpoint(tcp::v4(), ANY_PORT)),
-      new_client_handler_(new_client_handler),
-      movie_layer_(movie_layer) {
+      movie_layer_(movie_layer),
+      new_client_handler_(new_client_handler) {
     start_accept();
 }
 

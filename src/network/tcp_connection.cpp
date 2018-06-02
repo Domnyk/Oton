@@ -34,8 +34,6 @@ void tcp_connection::read() {
     }
 
     auto msg_type = message_.get_header().get_msg_type();
-    std::cout << "msg_type is: " << msg_type << std::endl;
-
     switch (msg_type) {
     case protocol::GET_MOVIE_LIST:
         handle_get_movie_list();
@@ -47,10 +45,13 @@ void tcp_connection::read() {
         handle_get_frame();
         break;
     case protocol::MOVIE_FINISHED:
+        handle_movie_finished();
         break;
     case protocol::DISCONNECT:
+        handle_disconnect();
         break;
     default:
+        std::cerr << "Unrecognized header" << std::endl;
         break;
     }
 
@@ -146,6 +147,14 @@ void tcp_connection::handle_get_frame() {
     } catch (std::exception& err) {
         std::cerr << "Error during send_with_confirmation in handle_get_frame: " << err.what() << std::endl;
     }
+}
+
+void tcp_connection::handle_disconnect() {
+    socket_.close();
+}
+
+void tcp_connection::handle_movie_finished() {
+    // Nothing for now
 }
 
 protocol::message_type tcp_connection::read_confirmation() {

@@ -134,7 +134,6 @@ unsigned short Header::get_num_of_cols() const {
 }
 
 unsigned short Header::get_num_of_rows() const {
-    std::cout << "num_of_rows: " << num_of_rows_ << std::endl;
     return num_of_rows_;
 }
 
@@ -151,7 +150,6 @@ void Header::set_msg_type(message_type msg_type) {
 }
 
 void Header::set_body_len(unsigned int body_len) {
-    std::cout << "ARG to set_body_len: " << body_len << std::endl;
     body_len_ = body_len;
 }
 
