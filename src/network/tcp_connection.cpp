@@ -22,6 +22,11 @@ tcp::socket& tcp_connection::get_socket() {
 void tcp_connection::read() {
     try {
         read_with_confirmation();
+    } catch (boost::system::system_error& err) {
+        if (err.code().value() == boost::system::errc::no_such_file_or_directory) {
+            std::cerr << "Client has disconnected" << std::endl;
+            return;
+        }
     } catch (std::exception& err) {
         std::cerr << "Error during read_with_confirmation. Terminating connection." << std::endl;
         socket_.close();
