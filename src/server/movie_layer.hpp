@@ -27,8 +27,10 @@ public:
 
     std::string get_movie_list();
 
+    std::mutex& get_mtx();
 private:
     movies movies_;
+    std::mutex mtx_;
 };
 
 #endif // MOVIE_LAYER_HPP

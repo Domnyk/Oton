@@ -2,6 +2,7 @@
 #include <iostream>
 #include <opencv2/imgcodecs.hpp>
 #include <cstring>
+#include <boost/thread.hpp>
 #include "tcp_connection.hpp"
 #include "../movie/Resolution.hpp"
 #include "protocol/Constants.hpp"
@@ -84,6 +85,8 @@ void tcp_connection::handle_get_movie() {
     unsigned int numOfFrames;
     protocol::message_type msg_type = protocol::GIVE_FRAME;
     try {
+       // boost::lock_guard<std::mutex> lock(movie_layer_->get_mtx());
+
        frame = movie_layer_->get_movie(streamed_movie_)
                              .videoStream()
                              .getFrame(0)
@@ -113,12 +116,15 @@ void tcp_connection::handle_get_movie() {
 }
 
 void tcp_connection::handle_get_frame() {
+
     Frame frame;
     unsigned num_of_frames;
     protocol::Header& header = message_.get_header();
     protocol::message_type msg_type = protocol::message_type::GIVE_FRAME;
 
     try {
+        boost::lock_guard<std::mutex> lock(movie_layer_->get_mtx());
+
         VideoStream& vs = movie_layer_->get_movie(streamed_movie_).videoStream();
 
         frame = vs.getFrame(message_.get_header().get_frame_num())

@@ -1,7 +1,7 @@
 #include <iostream>
 #include "movie_layer.hpp"
 
-movie_layer::movie_layer() : movies_() {
+movie_layer::movie_layer() : movies_(), mtx_() {
 
 }
 
@@ -52,4 +52,8 @@ std::string movie_layer::get_movie_list() {
     }
 
     return movie_list;
+}
+
+std::mutex& movie_layer::get_mtx() {
+    return mtx_;
 }
