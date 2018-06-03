@@ -26,10 +26,10 @@ private:
     void handle_get_frame();
     void handle_movie_finished();
     void handle_disconnect();
+    void handle_speed_control_init();
 
     void read_header();
     void read_body();
-    double read_updated_speed();
     protocol::message_type read_confirmation();
     void read_with_confirmation();
 

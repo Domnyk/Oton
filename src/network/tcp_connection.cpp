@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstring>
 #include <chrono>
+#include <boost/array.hpp>
 #include "tcp_connection.hpp"
 #include "../movie/Resolution.hpp"
 #include "protocol/Constants.hpp"
@@ -45,6 +46,9 @@ void tcp_connection::read() {
         break;
     case protocol::GET_FRAME:
         handle_get_frame();
+        break;
+    case protocol::SPEED_CONTROL_INIT:
+        handle_speed_control_init();
         break;
     case protocol::MOVIE_FINISHED:
         handle_movie_finished();
@@ -110,8 +114,11 @@ void tcp_connection::handle_get_movie() {
     try {
         send_with_confirmation(msg_type);
     } catch (std::exception& err) {
-        std::cerr << "Error during send_with_confirmation in handle_get_movie: " << err.what() << std::endl;
+        std::cerr << "Error during send_with_confirmation in handle_get_movie: " << err.what() << ". Frame counter not increased." << std::endl;
+        return;
     }
+
+    ++frames_since_speed_control_;
 }
 
 void tcp_connection::handle_get_frame() {
@@ -147,12 +154,61 @@ void tcp_connection::handle_get_frame() {
     try {
         send_with_confirmation(msg_type);
     } catch (std::exception& err) {
-        std::cerr << "Error during send_with_confirmation in handle_get_frame: " << err.what() << std::endl;
+        std::cerr << "Error during send_with_confirmation in handle_get_frame: " << err.what() << "Frame counter not increased." << std::endl;
+        return;
     }
+
+    ++frames_since_speed_control_;
 }
 
 void tcp_connection::handle_disconnect() {
     socket_.close();
+}
+
+void tcp_connection::handle_speed_control_init() {
+    using namespace std::chrono;
+
+    unsigned long long ts_1, ts_2;
+    const unsigned msg_size = 1000;
+    const unsigned short timestamp_length = 20;
+    const unsigned short msg_type_index = 1;
+    const unsigned short speed_control_msg_size = 54;
+    boost::array<char, msg_size> buf;
+    buf.fill('0');
+
+    // Send dumb packet
+    buf.at(msg_type_index) = static_cast<char>(message_.get_header().get_msg_type());
+    ts_1 = duration_cast<nanoseconds>(system_clock::now().time_since_epoch()).count();
+    try {
+        boost::asio::write(socket_, boost::asio::buffer(buf, msg_size));
+    } catch (std::exception& err) {
+        std::cerr << "Error during sending of speed control message: " << err.what() << std::endl;
+    }
+
+    // Read response
+    try {
+        boost::asio::read(socket_, boost::asio::buffer(message_.data(), speed_control_msg_size));
+    } catch (std::exception& err) {
+        std::cerr << "Error during reading of speed control message: " << err.what() << std::endl;
+    }
+
+    // Process response
+    message_.get_header().parse();
+    if (!(protocol::message_type::SPEED_CONTROL_FIN == message_.get_header().get_msg_type())) {
+        throw std::runtime_error("Speed control: expected SPEED_CONTROL_FIN");
+    }
+
+    ts_2 = std::stoll(std::string(message_.body(), timestamp_length));
+
+    try {
+        send_confirmation(protocol::message_type::SPEED_CONTROL_FIN);
+    } catch (std::exception& err) {
+        std::cerr << "Error during sending of speed control end: " << err.what() << std::endl;
+    }
+
+    std::cerr << "Value set by handle_speed_control_init is untrusted. Check it out" << std::endl;
+    std::cerr << "Time window is: " << ts_2 - ts_1 << std::endl;
+    std::cerr << "This value is: " << msg_size / ((ts_2 - ts_1) / 1000) << std::endl;
 }
 
 void tcp_connection::handle_movie_finished() {
@@ -170,42 +226,6 @@ protocol::message_type tcp_connection::read_confirmation() {
 
     auto confirmation_num = std::stoi(std::string(confirmation));
     return static_cast<protocol::message_type>(confirmation_num);
-}
-
-double tcp_connection::read_updated_speed() {
-    using namespace std::chrono;
-
-    // Record timestamp
-    auto ts_1 = duration_cast<nanoseconds>(steady_clock::now().time_since_epoch()).count();
-
-    // Convert to string
-
-    // Send data
-    message_.get_header().set_msg_type(protocol::message_type::SPEED_CONTROL_INIT);
-    message_.get_header().encode();
-    send_header();
-
-    // Await response
-    const unsigned short speed_control_msg_size = 48;
-    try {
-        boost::asio::read(socket_, boost::asio::buffer(message_.data(), speed_control_msg_size));
-    } catch (std::exception& err) {
-        std::cerr << "Error during reading of speed control message: " << err.what() << std::endl;
-    }
-
-    // Process response
-    message_.get_header().parse();
-    if (!(protocol::message_type::SPEED_CONTROL_FIN == message_.get_header().get_msg_type())) {
-        throw std::runtime_error("Speed control: expected SPEED_CONTROL_FIN");
-    }
-    unsigned short timestamp_length = 14;
-    auto ts_2 = std::stoll(std::string(message_.body(), timestamp_length));
-
-    // Return speed
-    std::cerr << "ts_2: " << ts_2 << std::endl;
-    std::cerr << "ts_1: " << ts_1 << std::endl;
-    std::cerr << "Time window: " <<  ts_2 - ts_1 << std::endl;
-    return (34 * 1000 / (ts_2 - ts_1));
 }
 
 void tcp_connection::send_confirmation(protocol::message_type msg_type) {
@@ -256,6 +276,11 @@ void tcp_connection::read_with_confirmation() {
     bool is_confirmation_required = header.get_msg_type() == protocol::message_type::GET_MOVIE;
     if(is_confirmation_required) {
         send_confirmation(header.get_msg_type());
+    }
+
+    bool is_empty_body = header.get_body_len() == 0;
+    if(is_empty_body) {
+        std::cerr << "Empty body. No need to call read_body()" << std::endl;
     }
 
     read_body();
