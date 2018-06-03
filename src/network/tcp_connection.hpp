@@ -12,6 +12,8 @@ class tcp_connection {
 public:
     typedef std::shared_ptr<tcp_connection> shared_pointer;
 
+    static const unsigned short SPEED_CONTROL_PERIOD;
+
     static shared_pointer create(boost::asio::io_context&, unique_ptr<movie_layer>&);
     tcp::socket& get_socket();
 
@@ -27,6 +29,7 @@ private:
 
     void read_header();
     void read_body();
+    double read_updated_speed();
     protocol::message_type read_confirmation();
     void read_with_confirmation();
 
@@ -41,4 +44,6 @@ private:
     unique_ptr<movie_layer>& movie_layer_;
 	tcp::socket socket_;
     std::string streamed_movie_;
+    unsigned short frames_since_speed_control_;
+    unsigned client_download_speed_;
 };

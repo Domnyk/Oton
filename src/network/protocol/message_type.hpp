@@ -11,7 +11,9 @@ namespace protocol {
         GIVE_FRAME = 3,
         GET_FRAME = 4,
         MOVIE_FINISHED = 5,
-        DISCONNECT = 6
+        DISCONNECT = 6,
+        SPEED_CONTROL_INIT = 7,
+        SPEED_CONTROL_FIN = 8
     };
 }
 

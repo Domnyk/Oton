@@ -1,13 +1,15 @@
-#include <boost/bind.hpp>
 #include <iostream>
-#include <opencv2/imgcodecs.hpp>
 #include <cstring>
+#include <chrono>
 #include "tcp_connection.hpp"
 #include "../movie/Resolution.hpp"
 #include "protocol/Constants.hpp"
 
+const unsigned short tcp_connection::SPEED_CONTROL_PERIOD = 20;
+
 tcp_connection::tcp_connection(boost::asio::io_context& io_context, std::unique_ptr<movie_layer>& movie_layer):
-    message_(), movie_layer_(movie_layer), socket_(io_context) {
+    message_(), movie_layer_(movie_layer), socket_(io_context), frames_since_speed_control_(0),
+    client_download_speed_(0) {
 
 }
 
@@ -168,6 +170,42 @@ protocol::message_type tcp_connection::read_confirmation() {
 
     auto confirmation_num = std::stoi(std::string(confirmation));
     return static_cast<protocol::message_type>(confirmation_num);
+}
+
+double tcp_connection::read_updated_speed() {
+    using namespace std::chrono;
+
+    // Record timestamp
+    auto ts_1 = duration_cast<nanoseconds>(steady_clock::now().time_since_epoch()).count();
+
+    // Convert to string
+
+    // Send data
+    message_.get_header().set_msg_type(protocol::message_type::SPEED_CONTROL_INIT);
+    message_.get_header().encode();
+    send_header();
+
+    // Await response
+    const unsigned short speed_control_msg_size = 48;
+    try {
+        boost::asio::read(socket_, boost::asio::buffer(message_.data(), speed_control_msg_size));
+    } catch (std::exception& err) {
+        std::cerr << "Error during reading of speed control message: " << err.what() << std::endl;
+    }
+
+    // Process response
+    message_.get_header().parse();
+    if (!(protocol::message_type::SPEED_CONTROL_FIN == message_.get_header().get_msg_type())) {
+        throw std::runtime_error("Speed control: expected SPEED_CONTROL_FIN");
+    }
+    unsigned short timestamp_length = 14;
+    auto ts_2 = std::stoll(std::string(message_.body(), timestamp_length));
+
+    // Return speed
+    std::cerr << "ts_2: " << ts_2 << std::endl;
+    std::cerr << "ts_1: " << ts_1 << std::endl;
+    std::cerr << "Time window: " <<  ts_2 - ts_1 << std::endl;
+    return (34 * 1000 / (ts_2 - ts_1));
 }
 
 void tcp_connection::send_confirmation(protocol::message_type msg_type) {
