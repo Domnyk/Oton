@@ -39,7 +39,6 @@ SOURCES += \
     src/movie/Movie.cpp \
     src/movie/VideoStream.cpp \
     src/network/tcp_connection.cpp \
-    src/network/tcp_server.cpp \
     src/server/movie_layer.cpp \
     src/server/network_layer.cpp \
     src/network/udp_server.cpp \
@@ -47,7 +46,8 @@ SOURCES += \
     src/network/protocol/parser.cpp \
     src/network/udp_connection.cpp \
     src/network/protocol/Header.cpp \
-    src/network/protocol/Message.cpp
+    src/network/protocol/Message.cpp \
+    src/network/Acceptor.cpp
 
 HEADERS += \
     tests/ClientTest.hpp \
@@ -60,7 +60,6 @@ HEADERS += \
     src/movie/Resolution.hpp \
     src/movie/VideoStream.hpp \
     src/network/tcp_connection.hpp \
-    src/network/tcp_server.hpp \
     src/server/movie_layer.hpp \
     src/server/network_layer.hpp \
     src/network/udp_server.hpp \
@@ -70,7 +69,8 @@ HEADERS += \
     src/network/udp_connection.hpp \
     src/network/protocol/Header.hpp \
     src/network/protocol/Constants.hpp \
-    src/network/protocol/Message.hpp
+    src/network/protocol/Message.hpp \
+    src/network/Acceptor.hpp
 
 test {
     message(Test build)

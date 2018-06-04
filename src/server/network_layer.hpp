@@ -6,7 +6,7 @@
 #include <vector>
 #include <thread>
 #include <QObject>
-#include "../network/tcp_server.hpp"
+#include "../network/Acceptor.hpp"
 #include "../network/udp_server.hpp"
 #include "../network/client.hpp"
 #include "movie_layer.hpp"
@@ -38,12 +38,11 @@ signals:
 private:
     void if_fully_connected_emit_user_connects_signal(client&);
 
-    // std::string server_addr_;
     const unsigned short threads_num_;
     unique_ptr<movie_layer>& movie_layer_;
 
     boost::asio::io_context io_context;
-    tcp_server tcp_server_;
+    Acceptor acceptor_;
     udp_server udp_server_;
 
     std::vector<std::thread> threads;

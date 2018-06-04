@@ -34,7 +34,6 @@ private:
 
 
     udp::socket socket_;
-    udp::endpoint remote_endpoint_;
     std::function<void(udp::endpoint&)> new_client_handler_;
 };
 
