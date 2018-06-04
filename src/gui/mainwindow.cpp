@@ -47,6 +47,7 @@ void MainWindow::on_btn_close_server_clicked()
     ui->list_peers->clear();
 
     ui->btn_open_server->setEnabled(true);
+    ui->btn_close_server->setEnabled(false);
 }
 
 void MainWindow::on_btn_choose_file_clicked()
