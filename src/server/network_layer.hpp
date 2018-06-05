@@ -25,14 +25,8 @@ public:
     void insert_new_client_udp(udp::endpoint&);
     void insert_new_client_tcp(tcp::socket&);
 
-    const udp_server& get_udp_server() const {
-        return udp_server_;
-    }
-
-    const tcp_server& get_tcp_server() const {
-        return tcp_server_;
-    }
-
+    unsigned short get_udp_port() const;
+    unsigned short get_tcp_port() const;
 signals:
     void user_connects(const std::string&);
 private:
@@ -43,7 +37,6 @@ private:
 
     boost::asio::io_context io_context;
     Acceptor acceptor_;
-    udp_server udp_server_;
 
     std::vector<std::thread> threads;
 

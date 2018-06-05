@@ -23,12 +23,12 @@ public:
 
     // Convienence method
     unsigned short get_udp_port() const {
-        return network_layer_->get_udp_server().port();
+        return network_layer_->get_udp_port();
     }
 
     // Convienence method
     unsigned short get_tcp_port() const {
-        return network_layer_->get_tcp_server().port();
+        return network_layer_->get_tcp_port();
     }
 
     void init_network_layer();

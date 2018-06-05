@@ -8,8 +8,7 @@ network_layer::network_layer(unique_ptr<movie_layer>& movie_layer, const unsigne
     threads_num_(threads_num),
     movie_layer_(movie_layer),
     io_context(),
-    tcp_server_(io_context, std::bind(&network_layer::insert_new_client_tcp, std::ref(*this), std::placeholders::_1), movie_layer_),
-    udp_server_(io_context, std::bind(&network_layer::insert_new_client_udp, std::ref(*this), std::placeholders::_1)),
+    acceptor_(io_context, std::bind(&network_layer::insert_new_client_tcp, std::ref(*this), std::placeholders::_1), movie_layer_),
     threads(),
     clients() {
     for (int i = 0; i < threads_num_; ++i) {
@@ -27,6 +26,14 @@ network_layer::network_layer(unique_ptr<movie_layer>& movie_layer, const unsigne
 
 network_layer::~network_layer() {
     io_context.stop();
+}
+
+unsigned short network_layer::get_tcp_port() const {
+    return acceptor_.get_tcp_port();
+}
+
+unsigned short network_layer::get_udp_port() const {
+    return acceptor_.get_udp_port();
 }
 
 void network_layer::if_fully_connected_emit_user_connects_signal(client& client) {
