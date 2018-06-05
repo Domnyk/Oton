@@ -2,6 +2,7 @@
 #define MESSAGE_HPP
 
 #include <string>
+#include <iostream>
 #include "Header.hpp"
 
 namespace protocol {
@@ -25,13 +26,15 @@ namespace protocol {
         const Header& get_header() const;
 
         unsigned int msg_len() {
-            return HEADER_LENGTH + header_.get_body_len();
+            // return HEADER_LENGTH + header_.get_body_len();
+            std::cerr << "Fix Message::msg_len()" << std::endl;
+            return 0;
         }
 
         void set_body(const std::string&);
         void set_body(unsigned char*);
     private:
-        char data_[HEADER_LENGTH + MAX_BODY_LENGTH] = "";
+        char* data_;
         Header header_;
     };
 }

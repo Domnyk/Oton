@@ -1,35 +1,56 @@
 #include <boost/bind.hpp>
+#include <boost/array.hpp>
 #include <iostream>
 #include <opencv2/imgcodecs.hpp>
 #include <cstring>
-#include "tcp_connection.hpp"
+#include "Connection.hpp"
 #include "../movie/Resolution.hpp"
 #include "protocol/Constants.hpp"
 
-tcp_connection::tcp_connection(boost::asio::io_context& io_context, std::unique_ptr<movie_layer>& movie_layer):
-    message_(), movie_layer_(movie_layer), socket_(io_context) {
-
+Connection::Connection(boost::asio::io_context& io_context, unique_ptr<movie_layer>& movie_layer)
+    : tcp_socket_(io_context), udp_socket_(io_context),
+      movie_layer_(movie_layer) {
 }
 
-tcp_connection::shared_pointer tcp_connection::create(boost::asio::io_context& io_context, std::unique_ptr<movie_layer>& movie_layer) {
-    return tcp_connection::shared_pointer(new tcp_connection(io_context, movie_layer));
+tcp::socket& Connection::get_tcp_socket() {
+    return tcp_socket_;
 }
 
-tcp::socket& tcp_connection::get_socket() {
-	return socket_;
+udp::socket& Connection::get_udp_socket() {
+    return udp_socket_;
 }
 
-void tcp_connection::read() {
+void Connection::start() {
+    std::cerr << "Inside Connection::start()" << std::endl;
+
+    // Wait for TCP message with UDP socket number
+    unsigned const short port_num_len = 5;
+    boost::array<char, port_num_len> port_num_buf;
+    boost::asio::read(tcp_socket_, boost::asio::buffer(port_num_buf, port_num_buf.size()));
+
+    // Parse port num and set it
+    unsigned short client_udp_port = std::stoi(std::string(port_num_buf.data(), port_num_buf.size()));
+    udp_socket_.connect(udp::endpoint(udp::v4(), client_udp_port));
+
+    // Send server udp port num
+    unsigned short server_udp_port = udp_socket_.local_endpoint().port();
+    std::string server_port_num_str = std::to_string(server_udp_port);
+    boost::asio::write(tcp_socket_, boost::asio::buffer(server_port_num_str, server_port_num_str.size()));
+
+    read();
+}
+
+void Connection::read() {
     try {
         read_with_confirmation();
     } catch (boost::system::system_error& err) {
         if (err.code().value() == boost::system::errc::no_such_file_or_directory) {
-            std::cerr << "Client has disconnected" << std::endl;
+            std::cerr << "Client has disconnected: " << err.what() <<  std::endl;
             return;
         }
     } catch (std::exception& err) {
         std::cerr << "Error during read_with_confirmation. Terminating connection." << std::endl;
-        socket_.close();
+        tcp_socket_.close();
         return;
     }
 
@@ -58,7 +79,7 @@ void tcp_connection::read() {
     read();
 }
 
-void tcp_connection::handle_get_movie_list() {
+void Connection::handle_get_movie_list() {
     string movie_list = movie_layer_->get_movie_list();
     protocol::message_type msg_type = protocol::GIVE_MOVIE_LIST;
 
@@ -74,7 +95,7 @@ void tcp_connection::handle_get_movie_list() {
     }
 }
 
-void tcp_connection::handle_get_movie() {
+void Connection::handle_get_movie() {
     std::string movie_name = std::string(message_.body(), message_.get_header().get_body_len());
     streamed_movie_ = movie_name;
 
@@ -112,7 +133,7 @@ void tcp_connection::handle_get_movie() {
     }
 }
 
-void tcp_connection::handle_get_frame() {
+void Connection::handle_get_frame() {
     Frame frame;
     unsigned num_of_frames;
     protocol::Header& header = message_.get_header();
@@ -149,19 +170,19 @@ void tcp_connection::handle_get_frame() {
     }
 }
 
-void tcp_connection::handle_disconnect() {
-    socket_.close();
+void Connection::handle_disconnect() {
+    tcp_socket_.close();
 }
 
-void tcp_connection::handle_movie_finished() {
+void Connection::handle_movie_finished() {
     // Nothing for now
 }
 
-protocol::message_type tcp_connection::read_confirmation() {
+protocol::message_type Connection::read_confirmation() {
     char confirmation[protocol::FieldLength::msg_type + 1] = "";
 
     try {
-        boost::asio::read(socket_, boost::asio::buffer(confirmation, protocol::FieldLength::msg_type));
+        boost::asio::read(tcp_socket_, boost::asio::buffer(confirmation, protocol::FieldLength::msg_type));
     } catch (boost::system::system_error& err) {
         std::cerr << "An error occured during confirmation reading: " << err.what() << std::endl;
     }
@@ -170,35 +191,35 @@ protocol::message_type tcp_connection::read_confirmation() {
     return static_cast<protocol::message_type>(confirmation_num);
 }
 
-void tcp_connection::send_confirmation(protocol::message_type msg_type) {
+void Connection::send_confirmation(protocol::message_type msg_type) {
     std::string confirmation = "0" + to_string(msg_type);
-    boost::asio::write(socket_, boost::asio::buffer(confirmation.c_str(), protocol::FieldLength::msg_type));
+    boost::asio::write(tcp_socket_, boost::asio::buffer(confirmation.c_str(), protocol::FieldLength::msg_type));
 }
 
-bool tcp_connection::is_confirmation_correct(protocol::message_type msg_type, protocol::message_type confirmation) {
+bool Connection::is_confirmation_correct(protocol::message_type msg_type, protocol::message_type confirmation) {
     return msg_type == confirmation;
 }
 
-void tcp_connection::read_header() {
-    boost::asio::read(socket_, boost::asio::buffer(message_.data(), protocol::Message::HEADER_LENGTH));
+void Connection::read_header() {
+    boost::asio::read(tcp_socket_, boost::asio::buffer(message_.data(), protocol::Message::HEADER_LENGTH));
 }
 
-void tcp_connection::read_body() {
-    boost::asio::read(socket_, boost::asio::buffer(message_.body(), message_.get_header().get_body_len()));
+void Connection::read_body() {
+    boost::asio::read(tcp_socket_, boost::asio::buffer(message_.body(), message_.get_header().get_body_len()));
 }
 
-void tcp_connection::send_header() {
+void Connection::send_header() {
     std::string header(message_.data(), 34);
     std::cerr << "Header to send: " << header << std::endl;
 
-    boost::asio::write(socket_, boost::asio::buffer(message_.data(), protocol::Message::HEADER_LENGTH));
+    boost::asio::write(tcp_socket_, boost::asio::buffer(message_.data(), protocol::Message::HEADER_LENGTH));
 }
 
-void tcp_connection::send_body() {
-    boost::asio::write(socket_, boost::asio::buffer(message_.body(), message_.msg_len() - protocol::Message::HEADER_LENGTH));
+void Connection::send_body() {
+    boost::asio::write(tcp_socket_, boost::asio::buffer(message_.body(), message_.msg_len() - protocol::Message::HEADER_LENGTH));
 }
 
-void tcp_connection::send_with_confirmation(protocol::message_type expected_confirmation) {
+void Connection::send_with_confirmation(protocol::message_type expected_confirmation) {
     send_header();
 
     protocol::message_type confirmation = read_confirmation();
@@ -209,11 +230,11 @@ void tcp_connection::send_with_confirmation(protocol::message_type expected_conf
     send_body();
 }
 
-void tcp_connection::read_with_confirmation() {
+void Connection::read_with_confirmation() {
     protocol::Header& header = message_.get_header();
 
     read_header();
-    header.parse();
+    header.parse(message_.data());
 
     bool is_confirmation_required = header.get_msg_type() == protocol::message_type::GET_MOVIE;
     if(is_confirmation_required) {

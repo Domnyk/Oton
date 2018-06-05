@@ -3,7 +3,7 @@
 #include <iostream>
 #include <thread>
 
-#include "tcp_connection.hpp"
+#include "Connection.hpp"
 #include "Acceptor.hpp"
 #include "client.hpp"
 
@@ -13,7 +13,6 @@ Acceptor::Acceptor(boost::asio::io_context& io_context,
                        std::function<void(tcp::socket&)> new_client_handler,
                        unique_ptr<movie_layer>& movie_layer)
     : tcp_acceptor_(io_context, tcp::endpoint(tcp::v4(), ANY_PORT)),
-      udp_socket_(io_context, udp::endpoint(udp::v4(), ANY_PORT)),
       movie_layer_(movie_layer),
       new_client_handler_(new_client_handler) {
     tcp_start_accept();
@@ -24,44 +23,33 @@ unsigned short Acceptor::get_tcp_port() const {
 }
 
 unsigned short Acceptor::get_udp_port() const {
-    return udp_socket_.local_endpoint().port();
+    std::cerr << "Fix Acceptor::get_udp_port" << std::endl;
+    return 0;
 }
 
 void Acceptor::tcp_start_accept() {
-    auto tcp_socket_ptr = make_shared<tcp::socket>(tcp_acceptor_.get_executor().context());
+    auto connection_ptr = make_shared<Connection>(tcp_acceptor_.get_executor().context(), movie_layer_);
 
-    tcp_acceptor_.async_accept(*tcp_socket_ptr,
-                               boost::bind(&Acceptor::tcp_handle_accept, this, tcp_socket_ptr, boost::asio::placeholders::error)
+    tcp_acceptor_.async_accept(connection_ptr->get_tcp_socket(),
+                               boost::bind(&Acceptor::tcp_handle_accept, this,
+                                           connection_ptr, boost::asio::placeholders::error)
     );
 }
 
 
 
-void Acceptor::tcp_handle_accept(shared_ptr<tcp::socket> tcp_socket_ptr, const boost::system::error_code& ec) {
+void Acceptor::tcp_handle_accept(shared_ptr<Connection> connection_ptr, const boost::system::error_code& ec) {
     if (ec) {
         std::cerr << "Error during TCP async_accept: " << ec.message() << ". Returning" <<  std::endl;
         return;
     }
-
     std::cerr << "Client accepted over TCP" << std::endl;
-    std::cerr << "Initiating connection over UDP" << std::endl;
 
-    // Continue listen on UDP to perform full connect
-    udp_start_accept(tcp_socket_ptr);
-
-    // Start listening for UDP connection
-
-
-    /* udp_socket_.async_receive_from(boost::asio::buffer(data, data.size()),
-                                   remote_endpoint,
-                                   [](const boost::system::error_code& ec, std::size_t bytes_rcvd){
-                                        if(ec) {
-                                            std::cerr << "Error in lambda expression in handle_tcp_accept: " << ec.message() << std::endl;
-                                        }
-
-                                        std::cerr << "Returning for now" << std::endl;
-                                   }
-    ); */
+    std::thread t([connection_ptr](){
+        std::cerr << "Fix: upd_socket configuration to listen on the same port as TCP" << std::endl;
+        connection_ptr->start();
+    });
+    t.detach();
 
     /*
     std::thread t([=](){
@@ -75,7 +63,7 @@ void Acceptor::tcp_handle_accept(shared_ptr<tcp::socket> tcp_socket_ptr, const b
     this->tcp_start_accept();
 }
 
-void Acceptor::udp_start_accept(shared_ptr<tcp::socket> tcp_socket_ptr) {
+/* void Acceptor::udp_start_accept(shared_ptr<tcp::socket> tcp_socket_ptr) {
     boost::array<char, 1> data;
     auto remote_endpoint_ptr = make_shared<udp::endpoint>(tcp_socket_ptr->remote_endpoint().address(), ANY_PORT);
 
@@ -85,25 +73,26 @@ void Acceptor::udp_start_accept(shared_ptr<tcp::socket> tcp_socket_ptr) {
                                                tcp_socket_ptr, remote_endpoint_ptr,
                                                boost::asio::placeholders::error)
     );
-}
+} */
 
-void Acceptor::udp_handle_accept(shared_ptr<tcp::socket> tcp_socket_ptr, shared_ptr<udp::endpoint> udp_endpoint_ptr,
+/* void Acceptor::udp_handle_accept(shared_ptr<tcp::socket> tcp_socket_ptr, shared_ptr<udp::endpoint> udp_endpoint_ptr,
                                  const boost::system::error_code& ec) {
     if (ec) {
         std::cerr << "Error during UDP async_receive_from: " << ec.message() << ". Returning" <<  std::endl;
         return;
     }
 
-    std::cerr << "Is connected over TCP: " << tcp_socket_ptr->is_open() << std::endl;
+    std::cerr << "Client is fully connected. Waiting for message" << std::endl;
+    std::thread t([this, tcp_socket_ptr, udp_endpoint_ptr](){
+        tcp::socket tcp_socket(std::move(*tcp_socket_ptr));
+        udp::socket udp_socket(udp_socket_.get_executor().context(), udp_socket_.local_endpoint());
+        udp_socket.connect(*udp_endpoint_ptr);
 
-    std::cerr << "Client is fully connected" << std::endl;
-    std::cerr << "Test case: exiting" << std::endl;
-
-    // Start client thread
-    std::thread t([=](){
-
+        Connection connection(std::move(tcp_socket), std::move(udp_socket), movie_layer_);
+        connection.read();
     });
     t.detach();
-}
+
+} */
 
 

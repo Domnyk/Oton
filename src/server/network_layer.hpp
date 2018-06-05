@@ -7,7 +7,6 @@
 #include <thread>
 #include <QObject>
 #include "../network/Acceptor.hpp"
-#include "../network/udp_server.hpp"
 #include "../network/client.hpp"
 #include "movie_layer.hpp"
 

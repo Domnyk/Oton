@@ -1,23 +1,21 @@
 #pragma once
 
 #include <boost/asio.hpp>
-#include <boost/asio/io_service.hpp>
-#include <boost/asio/io_context.hpp>
 #include "movie_layer.hpp"
 #include "protocol/Message.hpp"
 
-using boost::asio::ip::tcp;
+using namespace boost::asio::ip;
 
-class tcp_connection {
+class Connection {
 public:
-    typedef std::shared_ptr<tcp_connection> shared_pointer;
+    Connection(boost::asio::io_context&, unique_ptr<movie_layer>&);
 
-    static shared_pointer create(boost::asio::io_context&, unique_ptr<movie_layer>&);
-    tcp::socket& get_socket();
+    tcp::socket& get_tcp_socket();
+    udp::socket& get_udp_socket();
 
-    void read();
+    void start();
 private:
-    tcp_connection(boost::asio::io_context&, unique_ptr<movie_layer>&);
+    void read();
 
     void handle_get_movie_list();
     void handle_get_movie();
@@ -39,6 +37,7 @@ private:
 
     protocol::Message message_;
     unique_ptr<movie_layer>& movie_layer_;
-	tcp::socket socket_;
+    tcp::socket tcp_socket_;
+    udp::socket udp_socket_;
     std::string streamed_movie_;
 };

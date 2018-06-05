@@ -5,7 +5,7 @@
 #include <set>
 #include <memory>
 #include "protocol/parser.hpp"
-#include "tcp_connection.hpp"
+#include "Connection.hpp"
 #include "client.hpp"
 #include "../server/movie_layer.hpp"
 
@@ -20,12 +20,11 @@ public:
     unsigned short get_udp_port() const;
 private:
     void tcp_start_accept();
-    void tcp_handle_accept(shared_ptr<tcp::socket>, const boost::system::error_code&);
+    void tcp_handle_accept(shared_ptr<Connection>, const boost::system::error_code&);
     void udp_start_accept(shared_ptr<tcp::socket>);
     void udp_handle_accept(shared_ptr<tcp::socket>, shared_ptr<udp::endpoint>, const boost::system::error_code&);
 
     tcp::acceptor tcp_acceptor_;
-    udp::socket udp_socket_;
     unique_ptr<movie_layer>& movie_layer_;
     std::function<void(tcp::socket&)> new_client_handler_;
 };

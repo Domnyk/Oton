@@ -7,27 +7,30 @@
 using namespace protocol;
 using namespace std;
 
-Header::Header() : data_(nullptr) {
+Header::Header() {
 }
 
-Header::Header(char* data) : data_(data) {
+Header::Header(char* data) {
+    std::cerr << "Fix Header::Header(char*)" << std::endl;
 }
 
-Header::Header(char* data, message_type message_type, unsigned int body_len) : data_(data),
+Header::Header(char* data, message_type message_type, unsigned int body_len) : /*data_(data), */
                                                                                msg_type_(message_type),
                                                                                body_len_(body_len) {
+    std::cerr << "Fix Header::Header(char*, message_type, unsigned int)" << std::endl;
     encode();
 }
 
 Header::Header(char* data, message_type msg_type, unsigned int body_len,
                unsigned short num_of_cols, unsigned short num_of_rows,
-               unsigned int num_of_frames, unsigned int frame_num) : data_(data),
+               unsigned int num_of_frames, unsigned int frame_num) : /* data_(data), */
                                                                      msg_type_(msg_type),
                                                                      body_len_(body_len),
                                                                      num_of_cols_(num_of_cols),
                                                                      num_of_rows_(num_of_rows),
                                                                      num_of_frames_(num_of_frames),
                                                                      frame_num_(frame_num) {
+    std::cerr << "Fix Header constructor with a lot of parameters" << std::endl;
 }
 
 unsigned int Header::parse_field(unsigned short field_length, const char* field_data) {
@@ -35,43 +38,43 @@ unsigned int Header::parse_field(unsigned short field_length, const char* field_
     return static_cast<unsigned int>(std::stoul(data));
 }
 
-void Header::parse() {
-    parse_msg_type();
-    parse_body_len();
-    parse_num_of_cols();
-    parse_num_of_rows();
-    parse_num_of_frames();
-    parse_frame_num();
+void Header::parse(char* data) {
+    parse_msg_type(data);
+    parse_body_len(data);
+    parse_num_of_cols(data);
+    parse_num_of_rows(data);
+    parse_num_of_frames(data);
+    parse_frame_num(data);
 }
 
-void Header::parse_msg_type() {
-    unsigned short buffer = parse_field(FieldLength::msg_type, data_);
+void Header::parse_msg_type(char* data) {
+    unsigned short buffer = parse_field(FieldLength::msg_type, data);
 
     msg_type_ = static_cast<message_type>(buffer);
 }
 
-void Header::parse_body_len() {
-    const char* body_len_data = data_ + FieldLength::msg_type;
+void Header::parse_body_len(char* data) {
+    const char* body_len_data = data + FieldLength::msg_type;
     body_len_ = parse_field(FieldLength::body_len, body_len_data);
 }
 
-void Header::parse_num_of_cols() {
-    const char* num_of_cols_data = data_ +
+void Header::parse_num_of_cols(char* data) {
+    const char* num_of_cols_data = data +
                                    FieldLength::msg_type +
                                    FieldLength::body_len;
     num_of_cols_ = parse_field(FieldLength::num_of_cols, num_of_cols_data);
 }
 
-void Header::parse_num_of_rows() {
-    const char* num_of_rows_data = data_ +
+void Header::parse_num_of_rows(char* data) {
+    const char* num_of_rows_data = data +
                                    FieldLength::msg_type +
                                    FieldLength::body_len +
                                    FieldLength::num_of_cols;
     num_of_rows_ = parse_field(FieldLength::num_of_rows, num_of_rows_data);
 }
 
-void Header::parse_num_of_frames() {
-    const char* num_of_frames_data = data_ +
+void Header::parse_num_of_frames(char* data) {
+    const char* num_of_frames_data = data +
                                    FieldLength::msg_type +
                                    FieldLength::body_len +
                                    FieldLength::num_of_cols +
@@ -79,8 +82,8 @@ void Header::parse_num_of_frames() {
     num_of_frames_ = parse_field(FieldLength::num_of_frames, num_of_frames_data);
 }
 
-void Header::parse_frame_num() {
-    const char* frame_num_data = data_ +
+void Header::parse_frame_num(char* data) {
+    const char* frame_num_data = data +
                                    FieldLength::msg_type +
                                    FieldLength::body_len +
                                    FieldLength::num_of_cols +
@@ -89,7 +92,7 @@ void Header::parse_frame_num() {
     frame_num_ = parse_field(FieldLength::frame_num, frame_num_data);
 }
 
-void Header::encode() {
+std::string Header::encode() {
     string header;
 
     char msg_type_buf[FieldLength::msg_type + 1] = "";
@@ -117,7 +120,7 @@ void Header::encode() {
     string frame_num(frame_num_buf);
 
     header = msg_type + body_len + num_of_cols + num_of_rows + num_of_frames + frame_num;
-    strcpy(data_, header.c_str());
+    return header;
 }
 
 

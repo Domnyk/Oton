@@ -5,7 +5,7 @@
 
 using namespace protocol;
 
-Message::Message() : header_(data_) {
+Message::Message() : header_() {
 
 }
 

@@ -27,19 +27,18 @@ namespace protocol {
         void set_num_of_frames(unsigned);
         void set_frame_num(unsigned);
 
-        void parse();
-        void parse_msg_type();
-        void parse_body_len();
-        void parse_num_of_cols();
-        void parse_num_of_rows();
-        void parse_num_of_frames();
-        void parse_frame_num();
+        void parse(char*);
+        void parse_msg_type(char*);
+        void parse_body_len(char*);
+        void parse_num_of_cols(char*);
+        void parse_num_of_rows(char*);
+        void parse_num_of_frames(char*);
+        void parse_frame_num(char*);
 
-        void encode();
+        std::string encode();
     private:
         unsigned int parse_field(unsigned short, const char*);
 
-        char* data_;
         message_type msg_type_ = static_cast<message_type>(0);
         unsigned int body_len_ = 0;
         unsigned short num_of_cols_ = 0;
