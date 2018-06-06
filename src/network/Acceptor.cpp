@@ -8,7 +8,7 @@
 const int ANY_PORT = 0;
 
 Acceptor::Acceptor(boost::asio::io_context& io_context,
-                   unique_ptr<movie_layer>& movie_layer,
+                   unique_ptr<MovieLayer>& movie_layer,
                    const unsigned short max_num_of_clients_)
     : tcp_acceptor_(io_context, tcp::endpoint(tcp::v4(), ANY_PORT)),
       movie_layer_(movie_layer),

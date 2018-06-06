@@ -7,8 +7,9 @@
 #include "../movie/Resolution.hpp"
 #include "protocol/Constants.hpp"
 
-Connection::Connection(boost::asio::io_context& io_context, unique_ptr<movie_layer>& movie_layer)
-    : movie_layer_(movie_layer), tcp_socket_(io_context), udp_socket_(io_context) {
+Connection::Connection(boost::asio::io_context& io_context, unique_ptr<MovieLayer>& movie_layer)
+    : movie_layer_(movie_layer), tcp_socket_(io_context), udp_socket_(io_context),
+      streamed_movie_(nullptr) {
 }
 
 tcp::socket& Connection::get_tcp_socket() {
@@ -90,7 +91,7 @@ void Connection::read() {
 }
 
 void Connection::handle_get_movie_list() {
-    string movie_list = movie_layer_->get_movie_list();
+    string movie_list = get_movie_list(*movie_layer_);
     protocol::message_type msg_type = protocol::GIVE_MOVIE_LIST;
 
     message_.get_header().set_msg_type(msg_type);
@@ -107,21 +108,19 @@ void Connection::handle_get_movie_list() {
 
 void Connection::handle_get_movie() {
     std::string movie_name = std::string(message_.body(), message_.get_header().get_body_len());
-    streamed_movie_ = movie_name;
+    streamed_movie_ = make_unique<Movie>(movie_layer_->get_movie_location(movie_name));
 
-    std::cerr << "Requested movie is: " << streamed_movie_ << std::endl;
+    std::cerr << "Requested movie is: " << movie_name << std::endl;
 
     Frame frame;
     unsigned int numOfFrames;
     protocol::message_type msg_type = protocol::GIVE_FRAME;
     try {
-       frame = movie_layer_->get_movie(streamed_movie_)
-                             .videoStream()
-                             .getFrame(0)
-                             .resize(Resolution::get144p());
+       frame = streamed_movie_->videoStream()
+                                .getFrame(0)
+                                .resize(Resolution::get144p());
 
-       numOfFrames = movie_layer_->get_movie(movie_name)
-                                   .videoStream().get_num_of_frames();
+       numOfFrames = streamed_movie_->videoStream().get_num_of_frames();
     } catch (std::out_of_range& err) {
         std::cerr << "No such movie on server. Exiting" << std::endl;
         return;
@@ -150,12 +149,11 @@ void Connection::handle_get_frame() {
     protocol::message_type msg_type = protocol::message_type::GIVE_FRAME;
 
     try {
-        VideoStream& vs = movie_layer_->get_movie(streamed_movie_).videoStream();
+        frame = streamed_movie_->videoStream()
+                                .getFrame(message_.get_header().get_frame_num())
+                                .resize(Resolution::get144p());
 
-        frame = vs.getFrame(message_.get_header().get_frame_num())
-                        .resize(Resolution::get144p());
-
-        num_of_frames = vs.get_num_of_frames();
+        num_of_frames = streamed_movie_->videoStream().get_num_of_frames();
     } catch (std::exception& err) {
         std::cerr << "An error occured during frame data retrive in handle_get_frame:" << err.what() << std::endl;
     }

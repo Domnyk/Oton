@@ -6,7 +6,7 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    server_(new movie_layer())
+    server_(new MovieLayer())
 {
     ui->setupUi(this);
 }
@@ -24,14 +24,10 @@ void MainWindow::on_edit_host_address_textChanged(const QString& /* arg1 */)
 void MainWindow::on_btn_choose_file_clicked(bool /* checked */)
 {
     string filePath = QFileDialog::getOpenFileName(this, "Add movie", QString(), tr("Movies (*.avi *.mp4)")).toStdString();
-    string fileName = server_.get_movie_layer()->get_movie_filename(filePath);
+    std::map<string, string>::iterator movie = server_.get_movie_layer()->add_movie(filePath).first;
 
-    if(server_.get_movie_layer()->is_movie_loaded(fileName)) {
-        return;
-    }
 
-    server_.get_movie_layer()->add_new_movie(filePath);
-    ui->list_movies->addItem(QString::fromStdString(fileName));
+    ui->list_movies->addItem(QString::fromStdString(movie->first));
 }
 
 void MainWindow::on_btn_close_server_clicked()

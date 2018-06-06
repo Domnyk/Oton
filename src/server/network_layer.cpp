@@ -5,7 +5,7 @@
 const unsigned short network_layer::DEFAULT_NUM_OF_THREAD_FOR_ASIO = 5;
 const unsigned short network_layer::DEFAULT_MAX_NUM_OF_CLIENTS = 5;
 
-network_layer::network_layer(unique_ptr<movie_layer>& movie_layer,
+network_layer::network_layer(unique_ptr<MovieLayer>& movie_layer,
                              const unsigned short max_num_of_clients,
                              const unsigned short threads_num) :
     threads_num_(threads_num),
