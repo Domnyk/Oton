@@ -15,13 +15,15 @@ class network_layer : public QObject
     Q_OBJECT
 
 public:
-    network_layer(unique_ptr<movie_layer>&, const unsigned short threads_num  = network_layer::default_num_of_thread_for_asio);
+    network_layer(unique_ptr<movie_layer>&,
+                  const unsigned short max_num_of_clients = network_layer::DEFAULT_MAX_NUM_OF_CLIENTS,
+                  const unsigned short threads_num  = network_layer::DEFAULT_NUM_OF_THREAD_FOR_ASIO);
+
     ~network_layer();
 
-    static const unsigned short default_num_of_thread_for_asio;
+    static const unsigned short DEFAULT_NUM_OF_THREAD_FOR_ASIO;
+    static const unsigned short DEFAULT_MAX_NUM_OF_CLIENTS;
 
-    void insert_new_client(client&);
-    void insert_new_client_udp(udp::endpoint&);
     void insert_new_client_tcp(tcp::socket&);
 
     unsigned short get_udp_port() const;
@@ -29,8 +31,6 @@ public:
 signals:
     void user_connects(const std::string&);
 private:
-    void if_fully_connected_emit_user_connects_signal(client&);
-
     const unsigned short threads_num_;
     unique_ptr<movie_layer>& movie_layer_;
 
@@ -38,8 +38,6 @@ private:
     Acceptor acceptor_;
 
     std::vector<std::thread> threads;
-
-    std::vector<client> clients;
 };
 
 #endif // NETWORK_LAYER_HPP

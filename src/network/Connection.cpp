@@ -28,6 +28,7 @@ void Connection::start() {
         boost::asio::read(tcp_socket_, boost::asio::buffer(port_num_buf, port_num_buf.size()));
     } catch (boost::system::system_error& err) {
         std::cerr << "Error during Connection::start() when reading from tcp_socket: " << err.what() << ". Terminating" << std::endl;
+        emit user_disconnects();
         return;
     }
 
@@ -42,6 +43,7 @@ void Connection::start() {
         boost::asio::write(tcp_socket_, boost::asio::buffer(server_port_num_str, server_port_num_str.size()));
     } catch (boost::system::system_error& err) {
         std::cerr << "Error during Connection::start() when writing to tcp_socket: " << err.what() << ". Terminating" << std::endl;
+        emit user_disconnects();
         return;
     }
 
@@ -54,6 +56,7 @@ void Connection::read() {
     } catch (boost::system::system_error& err) {
         if (err.code().value() == boost::system::errc::no_such_file_or_directory) {
             std::cerr << "Client has disconnected: " << err.what() <<  std::endl;
+            emit user_disconnects();
             return;
         }
     } catch (std::exception& err) {

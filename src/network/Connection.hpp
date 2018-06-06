@@ -1,12 +1,14 @@
 #pragma once
 
 #include <boost/asio.hpp>
+#include <QObject>
 #include "movie_layer.hpp"
 #include "protocol/Message.hpp"
 
 using namespace boost::asio::ip;
 
-class Connection {
+class Connection : public QObject {
+    Q_OBJECT
 public:
     Connection(boost::asio::io_context&, unique_ptr<movie_layer>&);
 
@@ -14,6 +16,9 @@ public:
     udp::socket& get_udp_socket();
 
     void start();
+signals:
+    void user_connects();
+    void user_disconnects();
 private:
     void read();
 

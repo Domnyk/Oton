@@ -31,7 +31,7 @@ public:
         return network_layer_->get_tcp_port();
     }
 
-    void init_network_layer();
+    void init_network_layer(const unsigned short);
 private:
     unique_ptr<network_layer> network_layer_;
     unique_ptr<movie_layer> movie_layer_;

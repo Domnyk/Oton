@@ -40,6 +40,7 @@ void MainWindow::on_btn_close_server_clicked()
 
     ui->btn_choose_file->setEnabled(true);
     ui->btn_delete_movie->setEnabled(true);
+    ui->edit_max_num_of_clients->setEnabled(true);
 
     ui->udp_port->clear();
     ui->tcp_port->clear();
@@ -80,7 +81,6 @@ void MainWindow::on_btn_show_details_clicked()
 
 void MainWindow::non_list_peers_user_connects(const std::string& ip) {
     ui->list_peers->addItem(QString::fromStdString(ip));
-    ui->list_peers->update();
 }
 
 void MainWindow::on_btn_open_server_clicked()
@@ -91,9 +91,16 @@ void MainWindow::on_btn_open_server_clicked()
 
     ui->btn_open_server->setEnabled(false);
     ui->btn_close_server->setEnabled(true);
+    ui->edit_max_num_of_clients->setEnabled(false);
     std::string host_address = ui->edit_host_address->text().toStdString();
 
-    server_.init_network_layer();
+    unsigned short max_num_of_clients = 1;
+    try {
+        max_num_of_clients = std::stoi(ui->edit_max_num_of_clients->text().toStdString());
+    } catch (std::exception& err) {
+        std::cerr << "Error during 'max number of clients' field conversion" << std::endl;
+    }
+    server_.init_network_layer(max_num_of_clients);
 
     qRegisterMetaType<std::string>("std::string");
 
