@@ -5,24 +5,23 @@
 
 using namespace protocol;
 
-Msg::Msg() : header_() {
-
+Msg::Msg() : data_(new char[protocol::HEADER_LENGTH + protocol::MAX_BODY_LENGTH]), header_() {
 }
 
-const char* Msg::data() const {
+std::shared_ptr<const char> Msg::data() const {
     return data_;
 }
 
-char* Msg::data() {
+std::shared_ptr<char> Msg::data() {
     return data_;
 }
 
-const char* Msg::body() const {
-    return data_ + HEADER_LENGTH;
+std::shared_ptr<const char> Msg::body() const {
+    return std::shared_ptr<const char>(data_, data_.get() + HEADER_LENGTH);
 }
 
-char* Msg::body() {
-    return data_ + HEADER_LENGTH;
+std::shared_ptr<char> Msg::body() {
+    return std::shared_ptr<char>(data_, data_.get() + HEADER_LENGTH);
 }
 
 Header& Msg::get_header() {
@@ -44,9 +43,9 @@ void Msg::set_body(const std::string& str) {
     header_.set_body_len(str_size);
 
     const char* c_str = str.c_str();
-    strcpy(data_ + HEADER_LENGTH, c_str);
+    strcpy(data_.get() + HEADER_LENGTH, c_str);
 }
 
 void Msg::set_body(unsigned char* data) {
-    memcpy(data_ + HEADER_LENGTH, data, header_.get_body_len());
+    memcpy(data_.get() + HEADER_LENGTH, data, header_.get_body_len());
 }

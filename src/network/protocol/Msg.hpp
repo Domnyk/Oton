@@ -11,11 +11,11 @@ namespace protocol {
     public:
         Msg();
 
-        const char* data() const;
-        char* data();
+        std::shared_ptr<const char> data() const;
+        std::shared_ptr<char> data();
 
-        const char* body() const;
-        char* body();
+        std::shared_ptr<const char> body() const;
+        std::shared_ptr<char> body();
 
         Header& get_header();
         const Header& get_header() const;
@@ -28,7 +28,7 @@ namespace protocol {
         void set_body(const std::string&);
         void set_body(unsigned char*);
     private:
-        char* data_;
+        std::shared_ptr<char> data_;
         Header header_;
     };
 }

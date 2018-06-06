@@ -32,7 +32,7 @@ void MainWindow::on_btn_choose_file_clicked(bool /* checked */)
 
 void MainWindow::on_btn_close_server_clicked()
 {
-    server_.get_network_layer().reset();
+    server_.get_network_layer().reset(nullptr);
 
     ui->btn_choose_file->setEnabled(true);
     ui->btn_delete_movie->setEnabled(true);
