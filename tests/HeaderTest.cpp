@@ -1,87 +1,114 @@
 #include <iostream>
+#include <array>
 #include "HeaderTest.hpp"
 #include "../src/network/protocol/message_type.hpp"
 
 using namespace std;
 
 void HeaderTest::when_data_is_correct_it_should_properly_parse_msg_type() {
-    const short NUM_OF_MSG_TYPES = 7;
+    const unsigned short NUM_OF_MSG_TYPES = 7;
+    const unsigned short POS_OF_MSG_TYPE = 1;
+    const unsigned short SHIFT_FOR_ASCII = 48;
 
     for (int i = 0; i < NUM_OF_MSG_TYPES; ++i) {
         auto expected_value = static_cast<protocol::message_type>(i);
-        std::string str = "0" + to_string(i) + "00000000000000000000000000000000";
-        char data[35];
-        strcpy(data, str.c_str());
+        std::array<char, protocol::HEADER_LENGTH> header_data{{'0'}};
+        header_data.fill('0');
+        header_data.at(POS_OF_MSG_TYPE) = static_cast<char>(i + SHIFT_FOR_ASCII);
 
-        protocol::Header header(data);
-        header.parse_msg_type();
+        protocol::Header header;
+        header.parse(header_data.data());
 
         QCOMPARE(header.get_msg_type(), expected_value);
     }
 }
 
 void HeaderTest::when_data_is_correct_it_should_properly_parse_body_len() {
-    unsigned short expected_value = 10;
-    string str = "00000000" + to_string(expected_value) + "000000000000000000000000";
-    char data[35];
-    strcpy(data, str.c_str());
+    const unsigned short POS_OF_BODY_LEN = 8;
+    const unsigned short expected_value = 10;
+    std::array<char, protocol::HEADER_LENGTH> header_data{{ '0' }};
+    header_data.fill('0');
+    header_data.at(POS_OF_BODY_LEN) = '1';
 
-    protocol::Header header(data);
-    header.parse_body_len();
+    protocol::Header header;
+    header.parse(header_data.data());
 
     QCOMPARE(header.get_body_len(), expected_value);
 }
 
 void HeaderTest::when_data_is_correct_it_should_properly_parse_num_of_cols() {
-    unsigned short expected_value = 9999;
-    string str = "0122222222" + to_string(expected_value) + "44440000000000000000";
-    char data[35];
-    strcpy(data, str.c_str());
+    const unsigned short POS_OF_NUM_OF_COLS = 10;
+    const unsigned short expected_value = 9999;
+    std::array<char, protocol::HEADER_LENGTH> header_data{{ '0' }};
+    header_data.fill('0');
+    header_data.at(POS_OF_NUM_OF_COLS) = '9';
+    header_data.at(POS_OF_NUM_OF_COLS + 1) = '9';
+    header_data.at(POS_OF_NUM_OF_COLS + 2) = '9';
+    header_data.at(POS_OF_NUM_OF_COLS + 3) = '9';
 
-    protocol::Header header(data);
-    header.parse_num_of_cols();
+    protocol::Header header;
+    header.parse(header_data.data());
 
     QCOMPARE(header.get_num_of_cols(), expected_value);
 }
 
 void HeaderTest::when_data_is_correct_it_should_properly_parse_num_of_rows() {
-    unsigned short expected_value = 9999;
-    string str = "01000000001234" + to_string(expected_value) + "1111111100000000";
-    char data[35];
-    strcpy(data, str.c_str());
+    const unsigned short POS_OF_NUM_OF_ROWS = 14;
+    const unsigned short expected_value = 9999;
+    std::array<char, protocol::HEADER_LENGTH> header_data{{ '0' }};
+    header_data.fill('0');
+    header_data.at(POS_OF_NUM_OF_ROWS) = '9';
+    header_data.at(POS_OF_NUM_OF_ROWS + 1) = '9';
+    header_data.at(POS_OF_NUM_OF_ROWS + 2) = '9';
+    header_data.at(POS_OF_NUM_OF_ROWS + 3) = '9';
 
-    protocol::Header header(data);
-    header.parse_num_of_rows();
+    protocol::Header header;
+    header.parse(header_data.data());
 
     QCOMPARE(header.get_num_of_rows(), expected_value);
 }
 
 void HeaderTest::when_data_is_correct_it_should_properly_parse_num_of_frames() {
-    unsigned int expected_value = 99999999;
-    string str = "010000000000006787" + to_string(expected_value) + "12345678";
-    char data[35];
-    strcpy(data, str.c_str());
+    const unsigned short POS_OF_NUM_OF_ROWS = 18;
+    const unsigned int expected_value = 99999999;
+    std::array<char, protocol::HEADER_LENGTH> header_data{{ '0' }};
+    header_data.fill('0');
+    header_data.at(POS_OF_NUM_OF_ROWS) = '9';
+    header_data.at(POS_OF_NUM_OF_ROWS + 1) = '9';
+    header_data.at(POS_OF_NUM_OF_ROWS + 2) = '9';
+    header_data.at(POS_OF_NUM_OF_ROWS + 3) = '9';
+    header_data.at(POS_OF_NUM_OF_ROWS + 4) = '9';
+    header_data.at(POS_OF_NUM_OF_ROWS + 5) = '9';
+    header_data.at(POS_OF_NUM_OF_ROWS + 6) = '9';
+    header_data.at(POS_OF_NUM_OF_ROWS + 7) = '9';
 
-    protocol::Header header(data);
-    header.parse_num_of_frames();
+    protocol::Header header;
+    header.parse(header_data.data());
 
     QCOMPARE(header.get_num_of_frames(), expected_value);
 }
 
 void HeaderTest::when_data_is_correct_it_should_properly_parse_frame_num() {
-    unsigned int expected_value = 99999999;
-    string str = "01000000000000678712345678" + to_string(expected_value);
-    char data[35];
-    strcpy(data, str.c_str());
+    const unsigned short POS_OF_FRAME_NUM = 26;
+    const unsigned int expected_value = 99999999;
+    std::array<char, protocol::HEADER_LENGTH> header_data{{ '0' }};
+    header_data.fill('0');
+    header_data.at(POS_OF_FRAME_NUM) = '9';
+    header_data.at(POS_OF_FRAME_NUM + 1) = '9';
+    header_data.at(POS_OF_FRAME_NUM + 2) = '9';
+    header_data.at(POS_OF_FRAME_NUM + 3) = '9';
+    header_data.at(POS_OF_FRAME_NUM + 4) = '9';
+    header_data.at(POS_OF_FRAME_NUM + 5) = '9';
+    header_data.at(POS_OF_FRAME_NUM + 6) = '9';
+    header_data.at(POS_OF_FRAME_NUM + 7) = '9';
 
-    protocol::Header header(data);
-    header.parse_frame_num();
+    protocol::Header header;
+    header.parse(header_data.data());
 
     QCOMPARE(header.get_frame_num(), expected_value);
 }
 
 void HeaderTest::encode_constructor_should_set_proper_values() {
-    char* data = new char[35];
     protocol::message_type msg_type = protocol::GET_MOVIE_LIST;
     unsigned int body_len = 1000;
     unsigned short num_of_cols = 256;
@@ -89,7 +116,7 @@ void HeaderTest::encode_constructor_should_set_proper_values() {
     unsigned int num_of_frames = 1000;
     unsigned int frame_num = 1;
 
-    protocol::Header header(data, msg_type, body_len, num_of_cols, num_of_rows, num_of_frames, frame_num);
+    protocol::Header header(msg_type, body_len, num_of_cols, num_of_rows, num_of_frames, frame_num);
 
     QCOMPARE(header.get_msg_type(), msg_type);
     QCOMPARE(header.get_body_len(), body_len);
@@ -97,12 +124,9 @@ void HeaderTest::encode_constructor_should_set_proper_values() {
     QCOMPARE(header.get_num_of_rows(), num_of_rows);
     QCOMPARE(header.get_num_of_frames(), num_of_frames);
     QCOMPARE(header.get_frame_num(), frame_num);
-
-    delete[] data;
 }
 
 void HeaderTest::should_properly_encode_header() {
-    char* data = new char[35];
     protocol::message_type msg_type = protocol::GET_MOVIE_LIST;
     unsigned int body_len = 1000;
     unsigned short num_of_cols = 256;
@@ -110,9 +134,9 @@ void HeaderTest::should_properly_encode_header() {
     unsigned int num_of_frames = 1000;
     unsigned int frame_num = 1;
 
-    protocol::Header header(data, msg_type, body_len, num_of_cols, num_of_rows, num_of_frames, frame_num);
-    header.encode();
-    header.parse();
+    protocol::Header header(msg_type, body_len, num_of_cols, num_of_rows, num_of_frames, frame_num);
+    std::string encoded_header = header.encode();
+    header.parse(encoded_header.data());
 
     QCOMPARE(header.get_msg_type(), msg_type);
     QCOMPARE(header.get_body_len(), body_len);
@@ -120,8 +144,6 @@ void HeaderTest::should_properly_encode_header() {
     QCOMPARE(header.get_num_of_rows(), num_of_rows);
     QCOMPARE(header.get_num_of_frames(), num_of_frames);
     QCOMPARE(header.get_frame_num(), frame_num);
-
-    delete[] data;
 }
 
 

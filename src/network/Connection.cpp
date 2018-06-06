@@ -21,12 +21,15 @@ udp::socket& Connection::get_udp_socket() {
 }
 
 void Connection::start() {
-    std::cerr << "Inside Connection::start()" << std::endl;
 
-    // Wait for TCP message with UDP socket number
     unsigned const short port_num_len = 5;
     boost::array<char, port_num_len> port_num_buf;
-    boost::asio::read(tcp_socket_, boost::asio::buffer(port_num_buf, port_num_buf.size()));
+    try {
+        boost::asio::read(tcp_socket_, boost::asio::buffer(port_num_buf, port_num_buf.size()));
+    } catch (boost::system::system_error& err) {
+        std::cerr << "Error during Connection::start() when reading from tcp_socket: " << err.what() << ". Terminating" << std::endl;
+        return;
+    }
 
     // Parse port num and set it
     unsigned short client_udp_port = std::stoi(std::string(port_num_buf.data(), port_num_buf.size()));
@@ -35,7 +38,12 @@ void Connection::start() {
     // Send server udp port num
     unsigned short server_udp_port = udp_socket_.local_endpoint().port();
     std::string server_port_num_str = std::to_string(server_udp_port);
-    boost::asio::write(tcp_socket_, boost::asio::buffer(server_port_num_str, server_port_num_str.size()));
+    try {
+        boost::asio::write(tcp_socket_, boost::asio::buffer(server_port_num_str, server_port_num_str.size()));
+    } catch (boost::system::system_error& err) {
+        std::cerr << "Error during Connection::start() when writing to tcp_socket: " << err.what() << ". Terminating" << std::endl;
+        return;
+    }
 
     read();
 }
@@ -234,7 +242,8 @@ void Connection::read_with_confirmation() {
     protocol::Header& header = message_.get_header();
 
     read_header();
-    header.parse(message_.data());
+    std::cerr << "Uncomment parsing of header" << std::endl;
+    // header.parse(message_.data());
 
     bool is_confirmation_required = header.get_msg_type() == protocol::message_type::GET_MOVIE;
     if(is_confirmation_required) {

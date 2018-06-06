@@ -46,7 +46,6 @@ void Acceptor::tcp_handle_accept(shared_ptr<Connection> connection_ptr, const bo
     std::cerr << "Client accepted over TCP" << std::endl;
 
     std::thread t([connection_ptr](){
-        std::cerr << "Fix: upd_socket configuration to listen on the same port as TCP" << std::endl;
         connection_ptr->start();
     });
     t.detach();
