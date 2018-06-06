@@ -211,7 +211,7 @@ bool Connection::is_confirmation_correct(protocol::message_type msg_type, protoc
 }
 
 void Connection::read_header() {
-    boost::asio::read(tcp_socket_, boost::asio::buffer(message_.data(), protocol::Message::HEADER_LENGTH));
+    boost::asio::read(tcp_socket_, boost::asio::buffer(message_.data(), protocol::HEADER_LENGTH));
 }
 
 void Connection::read_body() {
@@ -222,11 +222,11 @@ void Connection::send_header() {
     std::string header(message_.data(), 34);
     std::cerr << "Header to send: " << header << std::endl;
 
-    boost::asio::write(tcp_socket_, boost::asio::buffer(message_.data(), protocol::Message::HEADER_LENGTH));
+    boost::asio::write(tcp_socket_, boost::asio::buffer(message_.data(), protocol::HEADER_LENGTH));
 }
 
 void Connection::send_body() {
-    boost::asio::write(tcp_socket_, boost::asio::buffer(message_.body(), message_.msg_len() - protocol::Message::HEADER_LENGTH));
+    boost::asio::write(tcp_socket_, boost::asio::buffer(message_.body(), message_.msg_len() - protocol::HEADER_LENGTH));
 }
 
 void Connection::send_with_confirmation(protocol::message_type expected_confirmation) {

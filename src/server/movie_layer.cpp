@@ -1,9 +1,7 @@
 #include <iostream>
 #include "movie_layer.hpp"
 
-movie_layer::movie_layer() : movies_() {
-
-}
+movie_layer::movie_layer() : movies_() {}
 
 void movie_layer::add_new_movie(const string& movie_path) {
     string movie_filename = get_movie_filename(movie_path);

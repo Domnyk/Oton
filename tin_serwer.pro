@@ -40,9 +40,11 @@ SOURCES += \
     src/server/movie_layer.cpp \
     src/server/network_layer.cpp \
     src/network/protocol/Header.cpp \
-    src/network/protocol/Message.cpp \
     src/network/Acceptor.cpp \
-    src/network/Connection.cpp
+    src/network/Connection.cpp \
+    tests/FrameTest.cpp \
+    src/network/protocol/Msg.cpp \
+    tests/MsgTest.cpp
 
 HEADERS += \
     tests/test_example.h \
@@ -58,9 +60,11 @@ HEADERS += \
     src/network/protocol/message_type.hpp \
     src/network/protocol/Header.hpp \
     src/network/protocol/Constants.hpp \
-    src/network/protocol/Message.hpp \
     src/network/Acceptor.hpp \
-    src/network/Connection.hpp
+    src/network/Connection.hpp \
+    tests/FrameTest.hpp \
+    src/network/protocol/Msg.hpp \
+    tests/MsgTest.hpp
 
 test {
     message(Test build)

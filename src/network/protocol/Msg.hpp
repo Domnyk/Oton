@@ -6,13 +6,10 @@
 #include "Header.hpp"
 
 namespace protocol {
-    class Message
+    class Msg
     {
     public:
-        static const int HEADER_LENGTH = 34;
-        static const int MAX_BODY_LENGTH = 1000000;
-
-        Message();
+        Msg();
 
         const char* data() const;
         char* data();
@@ -35,4 +32,5 @@ namespace protocol {
         Header header_;
     };
 }
+
 #endif

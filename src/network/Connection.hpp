@@ -3,7 +3,7 @@
 #include <boost/asio.hpp>
 #include <QObject>
 #include "movie_layer.hpp"
-#include "protocol/Message.hpp"
+#include "protocol/Msg.hpp"
 
 using namespace boost::asio::ip;
 
@@ -40,7 +40,7 @@ private:
 
     bool is_confirmation_correct(protocol::message_type msg_type, protocol::message_type confirmation);
 
-    protocol::Message message_;
+    protocol::Msg message_;
     unique_ptr<movie_layer>& movie_layer_;
     tcp::socket tcp_socket_;
     udp::socket udp_socket_;
