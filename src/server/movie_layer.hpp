@@ -31,4 +31,4 @@ private:
     movies movies_;
 };
 
-#endif // MOVIE_LAYER_HPP
+#endif

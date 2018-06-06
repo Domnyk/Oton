@@ -16,12 +16,12 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::on_edit_host_address_textChanged(const QString &arg1)
+void MainWindow::on_edit_host_address_textChanged(const QString& /* arg1 */)
 {
 
 }
 
-void MainWindow::on_btn_choose_file_clicked(bool checked)
+void MainWindow::on_btn_choose_file_clicked(bool /* checked */)
 {
     string filePath = QFileDialog::getOpenFileName(this, "Add movie", QString(), tr("Movies (*.avi *.mp4)")).toStdString();
     string fileName = server_.get_movie_layer()->get_movie_filename(filePath);

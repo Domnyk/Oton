@@ -5,9 +5,7 @@
 #include <set>
 #include <memory>
 #include <QObject>
-#include "protocol/parser.hpp"
 #include "Connection.hpp"
-#include "client.hpp"
 #include "../server/movie_layer.hpp"
 
 using namespace boost::asio::ip;

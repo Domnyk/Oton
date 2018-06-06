@@ -15,11 +15,11 @@ public:
 	Frame getFrame(unsigned);
 
     unsigned get_num_of_frames() {
-        return numOfFrames;
+        return num_of_frames_;
     }
 private:
 	VideoCapture videoCapture_;
- 	unsigned numOfFrames;
+    unsigned num_of_frames_;
 };
 
 #endif

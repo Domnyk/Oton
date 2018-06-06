@@ -15,4 +15,4 @@ namespace protocol {
     };
 }
 
-#endif // MESSAGE_TYPE_H
+#endif

@@ -8,8 +8,7 @@
 #include "protocol/Constants.hpp"
 
 Connection::Connection(boost::asio::io_context& io_context, unique_ptr<movie_layer>& movie_layer)
-    : tcp_socket_(io_context), udp_socket_(io_context),
-      movie_layer_(movie_layer) {
+    : movie_layer_(movie_layer), tcp_socket_(io_context), udp_socket_(io_context) {
 }
 
 tcp::socket& Connection::get_tcp_socket() {

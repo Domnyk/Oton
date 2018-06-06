@@ -43,4 +43,4 @@ private:
     Server server_;
 };
 
-#endif // MAINWINDOW_H
+#endif

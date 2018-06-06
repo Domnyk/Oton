@@ -7,7 +7,6 @@
 #include <thread>
 #include <QObject>
 #include "../network/Acceptor.hpp"
-#include "../network/client.hpp"
 #include "movie_layer.hpp"
 
 class network_layer : public QObject
@@ -40,4 +39,4 @@ private:
     std::vector<std::thread> threads;
 };
 
-#endif // NETWORK_LAYER_HPP
+#endif

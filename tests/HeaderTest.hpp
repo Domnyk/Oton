@@ -20,4 +20,4 @@ private slots:
     void should_properly_encode_header();
 };
 
-#endif // HEADERTEST_H
+#endif

@@ -33,16 +33,6 @@ const Header& Message::get_header() const {
    return header_;
 }
 
-void Message::set_data(const std::string& data_str) {
-    size_t str_size = data_str.size();
-    if (str_size > Message::HEADER_LENGTH + Message::MAX_BODY_LENGTH) {
-        throw std::runtime_error("Msg size too larger");
-    }
-
-    const char* data_c_str = data_str.c_str();
-    strcpy(data_, data_c_str);
-}
-
 void Message::set_body(const std::string& str) {
     size_t str_size = str.size();
 

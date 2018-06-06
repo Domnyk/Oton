@@ -20,13 +20,10 @@ namespace protocol {
         const char* body() const;
         char* body();
 
-        void set_data(const std::string&);
-
         Header& get_header();
         const Header& get_header() const;
 
         unsigned int msg_len() {
-            // return HEADER_LENGTH + header_.get_body_len();
             std::cerr << "Fix Message::msg_len()" << std::endl;
             return 0;
         }

@@ -29,7 +29,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += \
-    tests/ClientTest.cpp \
     tests/test_example.cpp \
     src/main.cpp \
     src/gui/mainwindow.cpp \
@@ -40,15 +39,12 @@ SOURCES += \
     src/movie/VideoStream.cpp \
     src/server/movie_layer.cpp \
     src/server/network_layer.cpp \
-    src/network/client.cpp \
-    src/network/protocol/parser.cpp \
     src/network/protocol/Header.cpp \
     src/network/protocol/Message.cpp \
     src/network/Acceptor.cpp \
     src/network/Connection.cpp
 
 HEADERS += \
-    tests/ClientTest.hpp \
     tests/test_example.h \
     src/gui/mainwindow.h \
     src/server/Server.hpp \
@@ -59,9 +55,7 @@ HEADERS += \
     src/movie/VideoStream.hpp \
     src/server/movie_layer.hpp \
     src/server/network_layer.hpp \
-    src/network/client.hpp \
     src/network/protocol/message_type.hpp \
-    src/network/protocol/parser.hpp \
     src/network/protocol/Header.hpp \
     src/network/protocol/Constants.hpp \
     src/network/protocol/Message.hpp \

@@ -2,10 +2,8 @@
 #include <boost/array.hpp>
 #include <iostream>
 #include <thread>
-
 #include "Connection.hpp"
 #include "Acceptor.hpp"
-#include "client.hpp"
 
 const int ANY_PORT = 0;
 

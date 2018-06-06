@@ -5,13 +5,10 @@
 
 using namespace std;
 
+Frame::Frame() : frameNum_(), pixelMatrix_() {}
+
 Frame::Frame(unsigned frameNum, Mat pixelMatrix) :
     frameNum_(frameNum), pixelMatrix_(pixelMatrix.clone()) {
-}
-
-Frame::Frame(const Frame& otherFrame) :
-	frameNum_(otherFrame.frameNum_), 
-	pixelMatrix_(otherFrame.pixelMatrix_.clone()) {
 }
 
 Frame Frame::resize(Size desiredSize) {
@@ -24,12 +21,27 @@ Frame Frame::resize(Size desiredSize) {
 		throw runtime_error("Desired size is bigger than source size");
 	}
 
-	try {
-		::resize(this->pixelMatrix_, resizedFrame.pixelMatrix_, desiredSize, 
-			scaleFactorX, scaleFactorY, INTER_AREA);
-	} catch (std::exception& e) {
-		cerr << e.what() << endl;
-	}
+    ::resize(this->pixelMatrix_, resizedFrame.pixelMatrix_, desiredSize,
+            scaleFactorX, scaleFactorY, INTER_AREA);
 
 	return resizedFrame;
+}
+
+ const Mat& Frame::getPixelMatrix() const {
+    return pixelMatrix_;
+}
+ const Size Frame::getSize() const {
+    return Size(pixelMatrix_.cols, pixelMatrix_.rows);
+}
+
+unsigned char* Frame::data() {
+    return pixelMatrix_.data;
+}
+
+unsigned const char* Frame::data() const {
+    return pixelMatrix_.data;
+}
+
+unsigned int Frame::data_length() const {
+    return pixelMatrix_.total() * pixelMatrix_.elemSize();
 }
