@@ -23,12 +23,11 @@ public:
     static const unsigned short DEFAULT_NUM_OF_THREAD_FOR_ASIO;
     static const unsigned short DEFAULT_MAX_NUM_OF_CLIENTS;
 
-    void insert_new_client_tcp(tcp::socket&);
-
     unsigned short get_udp_port() const;
     unsigned short get_tcp_port() const;
 signals:
     void user_connects(const std::string&);
+    void user_disconnects(const std::string&);
 private:
     const unsigned short threads_num_;
     unique_ptr<MovieLayer>& movie_layer_;

@@ -31,6 +31,10 @@ void Acceptor::tcp_start_accept() {
     QObject::connect(&(*connection_ptr), &Connection::user_connects, this, &Acceptor::user_connected);
     QObject::connect(&(*connection_ptr), &Connection::user_disconnects, this, &Acceptor::user_disconnected);
 
+    // Signal chaining
+    QObject::connect(&(*connection_ptr), &Connection::user_connects, this, &Acceptor::user_connects);
+    QObject::connect(&(*connection_ptr), &Connection::user_disconnects, this, &Acceptor::user_disconnects);
+
     tcp_acceptor_.async_accept(connection_ptr->get_tcp_socket(),
                                boost::bind(&Acceptor::tcp_handle_accept, this,
                                            connection_ptr, boost::asio::placeholders::error)
@@ -56,7 +60,6 @@ void Acceptor::tcp_handle_accept(shared_ptr<Connection> connection_ptr, const bo
     std::cerr << "Client accepted over TCP" << std::endl;
 
     std::thread t([connection_ptr](){
-        emit connection_ptr->user_connects();
         connection_ptr->start();
     });
     t.detach();

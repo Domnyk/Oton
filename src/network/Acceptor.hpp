@@ -18,6 +18,9 @@ public:
 
     unsigned short get_tcp_port() const;
     unsigned short get_udp_port() const;
+signals:
+    void user_connects(const std::string&);
+    void user_disconnects(const std::string&);
 private slots:
     void user_connected();
     void user_disconnected();

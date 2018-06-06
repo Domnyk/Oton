@@ -13,6 +13,9 @@ network_layer::network_layer(unique_ptr<MovieLayer>& movie_layer,
     io_context(),
     acceptor_(io_context, movie_layer_, max_num_of_clients),
     threads() {
+    QObject::connect(&acceptor_, &Acceptor::user_connects, this, &network_layer::user_connects);
+    QObject::connect(&acceptor_, &Acceptor::user_disconnects, this, &network_layer::user_disconnects);
+
     for (int i = 0; i < threads_num_; ++i) {
         threads.emplace_back(
             [&]() {
@@ -36,14 +39,4 @@ unsigned short network_layer::get_tcp_port() const {
 
 unsigned short network_layer::get_udp_port() const {
     return acceptor_.get_udp_port();
-}
-
-void network_layer::insert_new_client_tcp(tcp::socket& socket) {
-    auto endpoint = socket.remote_endpoint();
-    std::string client_desc =
-            "TCP. " +
-            endpoint.address().to_string() + ". " +
-            to_string(endpoint.port());
-
-    emit user_connects(client_desc);
 }

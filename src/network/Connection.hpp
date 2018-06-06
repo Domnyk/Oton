@@ -17,8 +17,8 @@ public:
 
     void start();
 signals:
-    void user_connects();
-    void user_disconnects();
+    void user_connects(const std::string&);
+    void user_disconnects(const std::string&);
 private:
     void read();
 

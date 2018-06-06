@@ -37,7 +37,9 @@ private slots:
 
     void on_btn_open_server_clicked();
 
-    void non_list_peers_user_connects(const std::string&);
+    void user_connected(const std::string&);
+
+    void user_disconnected(const std::string&);
 private:
     Ui::MainWindow *ui;
     Server server_;

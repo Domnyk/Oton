@@ -75,9 +75,15 @@ void MainWindow::on_btn_show_details_clicked()
 
 }
 
-void MainWindow::non_list_peers_user_connects(const std::string& ip) {
-    ui->list_peers->addItem(QString::fromStdString(ip));
+void MainWindow::user_connected(const std::string& ip_with_tcp_port) {
+    ui->list_peers->addItem(QString::fromStdString(ip_with_tcp_port));
 }
+
+void MainWindow::user_disconnected(const std::string& ip_with_tcp_port) {
+    auto list = ui->list_peers->findItems(QString::fromStdString(ip_with_tcp_port), Qt::MatchExactly);
+    list.at(0)->~QListWidgetItem();
+}
+
 
 void MainWindow::on_btn_open_server_clicked()
 {
@@ -104,7 +110,9 @@ void MainWindow::on_btn_open_server_clicked()
      * Connect network_layer to peer list
      */
     QObject::connect(&(*server_.get_network_layer()), &network_layer::user_connects,
-                     this, &MainWindow::non_list_peers_user_connects);
+                     this, &MainWindow::user_connected);
+    QObject::connect(&(*server_.get_network_layer()), &network_layer::user_disconnects,
+                     this, &MainWindow::user_disconnected);
 
 
     unsigned short udp_port = server_.get_udp_port();
