@@ -62,5 +62,11 @@ void FrameTest::it_should_resize_image_when_resolution_is_smaller_than_original(
     QCOMPARE(resizedFrame.getPixelMatrix().channels(), expected_num_of_channels);
 }
 
+void FrameTest::is_key_frame_should_always_return_true() {
+    Frame frame;
+
+    QCOMPARE(frame.is_key_frame(), true);
+}
+
 
 

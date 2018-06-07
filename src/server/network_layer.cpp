@@ -15,6 +15,7 @@ network_layer::network_layer(unique_ptr<MovieLayer>& movie_layer,
     threads() {
     QObject::connect(&acceptor_, &Acceptor::user_connects, this, &network_layer::user_connects);
     QObject::connect(&acceptor_, &Acceptor::user_disconnects, this, &network_layer::user_disconnects);
+    QObject::connect(this, &network_layer::server_closes, &acceptor_, &Acceptor::server_closes);
 
     for (int i = 0; i < threads_num_; ++i) {
         threads.emplace_back(
@@ -35,8 +36,4 @@ network_layer::~network_layer() {
 
 unsigned short network_layer::get_tcp_port() const {
     return acceptor_.get_tcp_port();
-}
-
-unsigned short network_layer::get_udp_port() const {
-    return acceptor_.get_udp_port();
 }

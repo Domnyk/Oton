@@ -23,22 +23,32 @@ void MainWindow::on_edit_host_address_textChanged(const QString& /* arg1 */)
 
 void MainWindow::on_btn_choose_file_clicked(bool /* checked */)
 {
+    typedef std::map<string, string>::iterator iter;
+
     string filePath = QFileDialog::getOpenFileName(this, "Add movie", QString(), tr("Movies (*.avi *.mp4)")).toStdString();
-    std::map<string, string>::iterator movie = server_.get_movie_layer()->add_movie(filePath).first;
+    std::pair<iter, bool> movie_info = server_.get_movie_layer()->add_movie(filePath);
 
+    bool is_movie_already_on_list = !movie_info.second;
+    if(is_movie_already_on_list) {
+        ui->status_value_label->setText(QString::fromStdString("Movie already on list!"));
+        return;
+    }
 
-    ui->list_movies->addItem(QString::fromStdString(movie->first));
+    std::string movie_filename = movie_info.first->first;
+    ui->list_movies->addItem(QString::fromStdString(movie_filename));
+    ui->status_value_label->setText(QString::fromStdString("Movie added"));
 }
 
 void MainWindow::on_btn_close_server_clicked()
 {
+    emit server_closes();
+
     server_.get_network_layer().reset(nullptr);
 
     ui->btn_choose_file->setEnabled(true);
     ui->btn_delete_movie->setEnabled(true);
     ui->edit_max_num_of_clients->setEnabled(true);
 
-    ui->udp_port->clear();
     ui->tcp_port->clear();
 
     ui->list_peers->clear();
@@ -60,19 +70,10 @@ void MainWindow::on_btn_delete_movie_clicked()
         QString movie_name = selectedItems[i]->text();
 
         server_.get_movie_layer()->delete_movie(movie_name.toStdString());
+        ui->status_value_label->setText(QString::fromStdString("Movie deleted"));
     }
 
     qDeleteAll(selectedItems);
-}
-
-void MainWindow::on_btn_kick_peer_clicked()
-{
-
-}
-
-void MainWindow::on_btn_show_details_clicked()
-{
-
 }
 
 void MainWindow::user_connected(const std::string& ip_with_tcp_port) {
@@ -114,9 +115,8 @@ void MainWindow::on_btn_open_server_clicked()
     QObject::connect(&(*server_.get_network_layer()), &network_layer::user_disconnects,
                      this, &MainWindow::user_disconnected);
 
+    QObject::connect(this, &MainWindow::server_closes, &(*server_.get_network_layer()), &network_layer::server_closes);
 
-    unsigned short udp_port = server_.get_udp_port();
     unsigned short tcp_port = server_.get_tcp_port();
-    ui->udp_port->setText(QString::fromStdString(to_string(udp_port)));
     ui->tcp_port->setText(QString::fromStdString(to_string(tcp_port)));
 }

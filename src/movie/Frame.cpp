@@ -45,3 +45,8 @@ unsigned const char* Frame::data() const {
 unsigned int Frame::data_length() const {
     return pixelMatrix_.total() * pixelMatrix_.elemSize();
 }
+
+bool Frame::is_key_frame() const {
+    std::cerr << "Frame::is_key_frame returns always true" << std::endl;
+    return true;
+}

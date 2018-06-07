@@ -7,9 +7,13 @@
 #include "../movie/Resolution.hpp"
 #include "protocol/Constants.hpp"
 
+const unsigned int MAX_DATAGRAM_SIZE = 1000;
+
 Connection::Connection(boost::asio::io_context& io_context, unique_ptr<MovieLayer>& movie_layer)
     : movie_layer_(movie_layer), tcp_socket_(io_context), udp_socket_(io_context),
       streamed_movie_(nullptr) {
+
+    QObject::connect(this, &Connection::server_closes, this, &Connection::server_close_btn_clicked);
 }
 
 tcp::socket& Connection::get_tcp_socket() {
@@ -21,6 +25,9 @@ udp::socket& Connection::get_udp_socket() {
 }
 
 void Connection::start() {
+    std::cerr << "Connection::start() is doing nothing for now" << std::endl;
+    std::cerr << "UNCOMMENT signal emiting" << std::endl;
+    /*
     unsigned const short port_num_len = 5;
     boost::array<char, port_num_len> port_num_buf;
     try {
@@ -50,52 +57,61 @@ void Connection::start() {
         std::cerr << "Error during Connection::start() when writing to tcp_socket: " << err.what() << ". Terminating" << std::endl;
         return;
     }
+    */
 
-    emit user_connects(tcp_socket_.remote_endpoint().address().to_string() + " " + std::to_string(tcp_socket_.remote_endpoint().port()));
+
+    //emit user_connects(tcp_socket_.remote_endpoint().address().to_string() + " " + std::to_string(tcp_socket_.remote_endpoint().port()));
 
     read();
 }
 
 void Connection::read() {
-    try {
-        read_with_confirmation();
-    } catch (boost::system::system_error& err) {
-        if (err.code().value() == boost::system::errc::no_such_file_or_directory) {
-            std::cerr << "Client has disconnected: " << err.what() <<  std::endl;
-            emit user_disconnects(tcp_socket_.remote_endpoint().address().to_string() + " " + std::to_string(tcp_socket_.remote_endpoint().port()));
-            tcp_socket_.close();
+    bool is_client_ok = true;
+
+    while(is_client_ok) {
+
+        try {
+            read_with_confirmation();
+        } catch (boost::system::system_error& err) {
+            if (err.code().value() == boost::system::errc::no_such_file_or_directory) {
+                std::cerr << "Client has disconnected: " << err.what() <<  std::endl;
+                emit user_disconnects(tcp_socket_.remote_endpoint().address().to_string() + " " + std::to_string(tcp_socket_.remote_endpoint().port()));
+                return;
+            }
+        } catch (std::exception& err) {
+            std::cerr << "Error during read_with_confirmation. Terminating connection." << std::endl;
             return;
         }
-    } catch (std::exception& err) {
-        std::cerr << "Error during read_with_confirmation. Terminating connection." << std::endl;
-        tcp_socket_.close();
-        return;
-    }
 
-    auto msg_type = message_.get_header().get_msg_type();
-    switch (msg_type) {
-    case protocol::GET_MOVIE_LIST:
-        handle_get_movie_list();
-        break;
-    case protocol::GET_MOVIE:
-        handle_get_movie();
-        break;
-    case protocol::GET_FRAME:
-        handle_get_frame();
-        break;
-    case protocol::MOVIE_FINISHED:
-        handle_movie_finished();
-        break;
-    case protocol::DISCONNECT:
-        handle_disconnect();
-        break;
-    default:
-        std::cerr << "Unrecognized header" << std::endl;
-        break;
+        std::cerr << "Received header is: " << message_.get_header().encode() << std::endl;
+
+        auto msg_type = message_.get_header().get_msg_type();
+        switch (msg_type) {
+        case protocol::GET_MOVIE_LIST:
+            is_client_ok = handle_get_movie_list();
+            break;
+        case protocol::GET_MOVIE:
+            is_client_ok = handle_get_movie();
+            break;
+        case protocol::GET_FRAME:
+            is_client_ok = handle_get_frame();
+            break;
+        case protocol::MOVIE_FINISHED:
+            is_client_ok = handle_movie_finished();
+            break;
+        case protocol::DISCONNECT:
+            is_client_ok = handle_disconnect();
+            break;
+        default:
+            std::cerr << "Unrecognized header" << std::endl;
+            break;
+        }
+
     }
 }
 
-void Connection::handle_get_movie_list() {
+bool Connection::handle_get_movie_list() {
+    bool is_client_ok = true;
     string movie_list = get_movie_list(*movie_layer_);
     protocol::message_type msg_type = protocol::GIVE_MOVIE_LIST;
 
@@ -105,51 +121,48 @@ void Connection::handle_get_movie_list() {
     message_.set_body(movie_list);
 
     try {
-        send_with_confirmation(msg_type);
+        send_with_confirmation(tcp_socket_, msg_type);
     } catch (std::exception& err) {
         std::cerr << "Error during send_with_confirmation in handle_get_movie_list: " << err.what() << std::endl;
+        is_client_ok = false;
     }
 
-    read();
+    return is_client_ok;
 }
 
-void Connection::handle_get_movie() {
+bool Connection::handle_get_movie() {
     std::string movie_name = std::string(message_.body().get(), message_.get_header().get_body_len());
     streamed_movie_ = make_unique<Movie>(movie_layer_->get_movie_location(movie_name));
 
-    Frame frame;
+    unique_ptr<Frame> frame;
     unsigned int numOfFrames;
     protocol::message_type msg_type = protocol::GIVE_FRAME;
     try {
-       frame = streamed_movie_->videoStream()
+       frame = make_unique<Frame>(streamed_movie_->videoStream()
                                 .getFrame(0)
-                                .resize(Resolution::get144p());
+                                .resize(Resolution::get144p()));
 
        numOfFrames = streamed_movie_->videoStream().get_num_of_frames();
     } catch (std::out_of_range& err) {
         std::cerr << "No such movie on server. Exiting" << std::endl;
-        return;
+        return false;
     }
 
     message_.get_header().set_msg_type(msg_type);
-    message_.get_header().set_body_len(frame.data_length());
-    message_.get_header().set_num_of_cols(frame.getSize().width);
-    message_.get_header().set_num_of_rows(frame.getSize().height);
+    message_.get_header().set_body_len(frame->data_length());
+    message_.get_header().set_num_of_cols(frame->getSize().width);
+    message_.get_header().set_num_of_rows(frame->getSize().height);
     message_.get_header().set_frame_num(0);
     message_.get_header().set_num_of_frames(numOfFrames);
     message_.set_header(message_.get_header().encode());
-    message_.set_body(frame.data());
+    message_.set_body(frame->data());
+    send_msg_with_frame(*(frame.get()), msg_type);
 
-    try {
-        send_with_confirmation(msg_type);
-    } catch (std::exception& err) {
-        std::cerr << "Error during send_with_confirmation in handle_get_movie: " << err.what() << std::endl;
-    }
-
-    read();
+    frame.reset(nullptr);
+    return true;
 }
 
-void Connection::handle_get_frame() {
+bool Connection::handle_get_frame() {
     Frame frame;
     unsigned num_of_frames;
     protocol::Header& header = message_.get_header();
@@ -164,8 +177,7 @@ void Connection::handle_get_frame() {
     } catch (std::exception& err) {
         std::cerr << "An error occured during frame data retrive in handle_get_frame:" << err.what() << std::endl;
         std::cerr << "Disconnecting user" << std::endl;
-        handle_disconnect();
-        return;
+        return false;
     }
 
     /*
@@ -180,25 +192,34 @@ void Connection::handle_get_frame() {
     message_.get_header().set_num_of_frames(num_of_frames);
     message_.set_header(message_.get_header().encode());
     message_.set_body(frame.data());
+    send_msg_with_frame(frame, msg_type);
 
-    try {
-        send_with_confirmation(msg_type);
-    } catch (std::exception& err) {
-        std::cerr << "Error during send_with_confirmation in handle_get_frame: " << err.what() << std::endl;
-    }
-
-    read();
+    return true;
 }
 
-void Connection::handle_disconnect() {
+void Connection::send_msg_with_frame(const Frame& frame, protocol::message_type msg_type) {
+    try {
+        if (frame.is_key_frame()) {
+            send_with_confirmation(tcp_socket_, msg_type);
+        } else {
+            send_with_confirmation(udp_socket_, msg_type);
+        }
+    } catch (std::exception& err) {
+        std::cerr << "Error during send_with_confirmation: " << err.what() << std::endl;
+    }
+}
+
+bool Connection::handle_disconnect() {
     emit user_disconnects(tcp_socket_.remote_endpoint().address().to_string() + " " + std::to_string(tcp_socket_.remote_endpoint().port()));
 
     tcp_socket_.close();
     udp_socket_.close();
+
+    return true;
 }
 
-void Connection::handle_movie_finished() {
-    read();
+bool Connection::handle_movie_finished() {
+    return true;
 }
 
 protocol::message_type Connection::read_confirmation() {
@@ -238,11 +259,23 @@ void Connection::send_header() {
     boost::asio::write(tcp_socket_, boost::asio::buffer(message_.data().get(), protocol::HEADER_LENGTH));
 }
 
-void Connection::send_body() {
-    boost::asio::write(tcp_socket_, boost::asio::buffer(message_.body().get(), message_.msg_len() - protocol::HEADER_LENGTH));
+void Connection::send_body(udp::socket& udp_socket) {
+    unsigned num_of_full_packets = (message_.msg_len() - protocol::HEADER_LENGTH) / MAX_DATAGRAM_SIZE;
+
+    for (unsigned short i = 0; i < num_of_full_packets; ++i) {
+        udp_socket.send(boost::asio::buffer(message_.body().get() + MAX_DATAGRAM_SIZE * i, MAX_DATAGRAM_SIZE));
+    }
+
+    unsigned last_packet_num_of_bytes = (message_.msg_len() - protocol::HEADER_LENGTH) - (num_of_full_packets * MAX_DATAGRAM_SIZE);
+
+    udp_socket.send(boost::asio::buffer(message_.body().get() + MAX_DATAGRAM_SIZE * (num_of_full_packets), last_packet_num_of_bytes) );
 }
 
-void Connection::send_with_confirmation(protocol::message_type expected_confirmation) {
+void Connection::send_body(tcp::socket& tcp_socket) {
+    boost::asio::write(tcp_socket, boost::asio::buffer(message_.body().get(), message_.msg_len() - protocol::HEADER_LENGTH));
+}
+
+void Connection::send_with_confirmation(tcp::socket& tcp_socket, protocol::message_type expected_confirmation) {
     send_header();
 
     protocol::message_type confirmation = read_confirmation();
@@ -250,7 +283,18 @@ void Connection::send_with_confirmation(protocol::message_type expected_confirma
         throw std::runtime_error("Wrong confirmation number");
     }
 
-    send_body();
+    send_body(tcp_socket);
+}
+
+void Connection::send_with_confirmation(udp::socket& udp_socket, protocol::message_type expected_confirmation) {
+    send_header();
+
+    protocol::message_type confirmation = read_confirmation();
+    if(!is_confirmation_correct(expected_confirmation, confirmation)) {
+        throw std::runtime_error("Wrong confirmation number");
+    }
+
+    send_body(udp_socket);
 }
 
 void Connection::read_with_confirmation() {
@@ -263,6 +307,16 @@ void Connection::read_with_confirmation() {
     if(is_confirmation_required) {
         send_confirmation(header.get_msg_type());
         read_body();
+    }
+}
+
+void Connection::server_close_btn_clicked() {
+    if(tcp_socket_.is_open()) {
+        tcp_socket_.close();
+    }
+
+    if(udp_socket_.is_open()) {
+        udp_socket_.close();
     }
 }
 

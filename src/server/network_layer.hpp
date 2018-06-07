@@ -28,6 +28,8 @@ public:
 signals:
     void user_connects(const std::string&);
     void user_disconnects(const std::string&);
+
+    void server_closes();
 private:
     const unsigned short threads_num_;
     unique_ptr<MovieLayer>& movie_layer_;

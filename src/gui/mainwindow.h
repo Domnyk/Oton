@@ -18,7 +18,7 @@ public:
     ~MainWindow();
 
 signals:
-    void user_better_connects();
+    void server_closes();
 
 private slots:
     void on_edit_host_address_textChanged(const QString &arg1);
@@ -30,10 +30,6 @@ private slots:
     void on_btn_choose_file_clicked();
 
     void on_btn_delete_movie_clicked();
-
-    void on_btn_kick_peer_clicked();
-
-    void on_btn_show_details_clicked();
 
     void on_btn_open_server_clicked();
 

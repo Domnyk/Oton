@@ -21,11 +21,6 @@ unsigned short Acceptor::get_tcp_port() const {
     return tcp_acceptor_.local_endpoint().port();
 }
 
-unsigned short Acceptor::get_udp_port() const {
-    std::cerr << "Fix Acceptor::get_udp_port" << std::endl;
-    return 0;
-}
-
 void Acceptor::tcp_start_accept() {
     auto connection_ptr = make_shared<Connection>(tcp_acceptor_.get_executor().context(), movie_layer_);
     QObject::connect(&(*connection_ptr), &Connection::user_connects, this, &Acceptor::user_connected);
@@ -34,6 +29,7 @@ void Acceptor::tcp_start_accept() {
     // Signal chaining
     QObject::connect(&(*connection_ptr), &Connection::user_connects, this, &Acceptor::user_connects);
     QObject::connect(&(*connection_ptr), &Connection::user_disconnects, this, &Acceptor::user_disconnects);
+    QObject::connect(this, &Acceptor::server_closes, &(*connection_ptr), &Connection::server_closes);
 
     tcp_acceptor_.async_accept(connection_ptr->get_tcp_socket(),
                                boost::bind(&Acceptor::tcp_handle_accept, this,

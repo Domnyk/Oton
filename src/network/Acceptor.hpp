@@ -21,6 +21,8 @@ public:
 signals:
     void user_connects(const std::string&);
     void user_disconnects(const std::string&);
+
+    void server_closes();
 private slots:
     void user_connected();
     void user_disconnected();

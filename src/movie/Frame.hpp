@@ -15,6 +15,8 @@ public:
 
     const Size getSize() const;
 
+    bool is_key_frame() const;
+
     unsigned char* data();
     unsigned const char* data() const;
     unsigned int data_length() const;

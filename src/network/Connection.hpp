@@ -19,24 +19,31 @@ public:
 signals:
     void user_connects(const std::string&);
     void user_disconnects(const std::string&);
+
+    void server_closes();
+public slots:
+    void server_close_btn_clicked();
 private:
     void read();
 
-    void handle_get_movie_list();
-    void handle_get_movie();
-    void handle_get_frame();
-    void handle_movie_finished();
-    void handle_disconnect();
+    bool handle_get_movie_list();
+    bool handle_get_movie();
+    bool handle_get_frame();
+    bool handle_movie_finished();
+    bool handle_disconnect();
 
     unsigned int read_header();
     void read_body();
-    protocol::message_type read_confirmation();
     void read_with_confirmation();
+    protocol::message_type read_confirmation();
 
+    void send_msg_with_frame(const Frame&, protocol::message_type);
     void send_header();
-    void send_body();
+    void send_body(tcp::socket&);
+    void send_body(udp::socket&);
     void send_confirmation(protocol::message_type);
-    void send_with_confirmation(protocol::message_type);
+    void send_with_confirmation(tcp::socket&, protocol::message_type);
+    void send_with_confirmation(udp::socket&, protocol::message_type);
 
     bool is_confirmation_correct(protocol::message_type msg_type, protocol::message_type confirmation);
 
