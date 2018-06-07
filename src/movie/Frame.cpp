@@ -1,7 +1,9 @@
 #include <iostream>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
+#include <boost/log/trivial.hpp>
 #include "Frame.hpp"
+
 
 using namespace std;
 
@@ -47,6 +49,6 @@ unsigned int Frame::data_length() const {
 }
 
 bool Frame::is_key_frame() const {
-    std::cerr << "Frame::is_key_frame returns always true" << std::endl;
+    BOOST_LOG_TRIVIAL(warning) << "Frame::is_key_frame returns always true";
     return true;
 }
