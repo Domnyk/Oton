@@ -21,11 +21,12 @@ namespace protocol {
         const Header& get_header() const;
 
         unsigned int msg_len() {
-            std::cerr << "Fix Message::msg_len()" << std::endl;
-            return 0;
+            return protocol::HEADER_LENGTH + header_.get_body_len();
         }
 
-        void set_body(const std::string&);
+        void set_header(std::string);
+
+        void set_body(std::string);
         void set_body(unsigned char*);
     private:
         std::shared_ptr<char> data_;

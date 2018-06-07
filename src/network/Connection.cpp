@@ -30,9 +30,16 @@ void Connection::start() {
         return;
     }
 
+
+
     // Parse port num and set it
     unsigned short client_udp_port = std::stoi(std::string(port_num_buf.data(), port_num_buf.size()));
-    udp_socket_.connect(udp::endpoint(udp::v4(), client_udp_port));
+    std::cerr << "UDP Port: " << client_udp_port << std::endl;
+    try {
+        udp_socket_.connect(udp::endpoint(tcp_socket_.remote_endpoint().address(), client_udp_port));
+    } catch (std::exception& err) {
+        std::cerr << "Error in udp_socket connect" << std::endl;
+    }
 
     // Send server udp port num
     unsigned short server_udp_port = udp_socket_.local_endpoint().port();
@@ -86,8 +93,6 @@ void Connection::read() {
         std::cerr << "Unrecognized header" << std::endl;
         break;
     }
-
-    read();
 }
 
 void Connection::handle_get_movie_list() {
@@ -96,7 +101,7 @@ void Connection::handle_get_movie_list() {
 
     message_.get_header().set_msg_type(msg_type);
     message_.get_header().set_body_len(movie_list.size());
-    message_.get_header().encode();
+    message_.set_header(message_.get_header().encode());
     message_.set_body(movie_list);
 
     try {
@@ -104,6 +109,8 @@ void Connection::handle_get_movie_list() {
     } catch (std::exception& err) {
         std::cerr << "Error during send_with_confirmation in handle_get_movie_list: " << err.what() << std::endl;
     }
+
+    read();
 }
 
 void Connection::handle_get_movie() {
@@ -130,7 +137,7 @@ void Connection::handle_get_movie() {
     message_.get_header().set_num_of_rows(frame.getSize().height);
     message_.get_header().set_frame_num(0);
     message_.get_header().set_num_of_frames(numOfFrames);
-    message_.get_header().encode();
+    message_.set_header(message_.get_header().encode());
     message_.set_body(frame.data());
 
     try {
@@ -138,6 +145,8 @@ void Connection::handle_get_movie() {
     } catch (std::exception& err) {
         std::cerr << "Error during send_with_confirmation in handle_get_movie: " << err.what() << std::endl;
     }
+
+    read();
 }
 
 void Connection::handle_get_frame() {
@@ -154,6 +163,9 @@ void Connection::handle_get_frame() {
         num_of_frames = streamed_movie_->videoStream().get_num_of_frames();
     } catch (std::exception& err) {
         std::cerr << "An error occured during frame data retrive in handle_get_frame:" << err.what() << std::endl;
+        std::cerr << "Disconnecting user" << std::endl;
+        handle_disconnect();
+        return;
     }
 
     /*
@@ -166,7 +178,7 @@ void Connection::handle_get_frame() {
     message_.get_header().set_num_of_rows(frame.getSize().height);
     // TODO: If client will always send num of frames then server don't need to set this field
     message_.get_header().set_num_of_frames(num_of_frames);
-    message_.get_header().encode();
+    message_.set_header(message_.get_header().encode());
     message_.set_body(frame.data());
 
     try {
@@ -174,14 +186,19 @@ void Connection::handle_get_frame() {
     } catch (std::exception& err) {
         std::cerr << "Error during send_with_confirmation in handle_get_frame: " << err.what() << std::endl;
     }
+
+    read();
 }
 
 void Connection::handle_disconnect() {
+    emit user_disconnects(tcp_socket_.remote_endpoint().address().to_string() + " " + std::to_string(tcp_socket_.remote_endpoint().port()));
+
     tcp_socket_.close();
+    udp_socket_.close();
 }
 
 void Connection::handle_movie_finished() {
-    // Nothing for now
+    read();
 }
 
 protocol::message_type Connection::read_confirmation() {

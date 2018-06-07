@@ -32,7 +32,7 @@ const Header& Msg::get_header() const {
    return header_;
 }
 
-void Msg::set_body(const std::string& str) {
+void Msg::set_body(std::string str) {
     size_t str_size = str.size();
 
 
@@ -42,8 +42,15 @@ void Msg::set_body(const std::string& str) {
 
     header_.set_body_len(str_size);
 
+    std::cerr << "Passed argument to Msg::set_body(): " << str << std::endl;
+
     const char* c_str = str.c_str();
-    strcpy(data_.get() + HEADER_LENGTH, c_str);
+    // strcpy(data_.get() + HEADER_LENGTH, c_str);
+    strcpy(body().get(), c_str);
+}
+
+void Msg::set_header(std::string str) {
+    memcpy(data_.get(), str.c_str(), protocol::HEADER_LENGTH);
 }
 
 void Msg::set_body(unsigned char* data) {

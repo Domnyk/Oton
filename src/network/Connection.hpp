@@ -28,7 +28,7 @@ private:
     void handle_movie_finished();
     void handle_disconnect();
 
-    void read_header();
+    unsigned int read_header();
     void read_body();
     protocol::message_type read_confirmation();
     void read_with_confirmation();
