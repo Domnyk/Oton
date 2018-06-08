@@ -3,7 +3,6 @@
 #include <opencv2/imgcodecs.hpp>
 #include "Frame.hpp"
 
-
 using namespace std;
 
 Frame::Frame() : frameNum_(), pixelMatrix_() {}

@@ -121,7 +121,6 @@ macx{
 
     LIBS += -L"/usr/local/lib"
 
-
     LIBS += -lboost_system \
         -lboost_filesystem \
         -lboost_serialization \

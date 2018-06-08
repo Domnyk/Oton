@@ -82,10 +82,6 @@ void MainWindow::user_connected(const std::string& ip_with_tcp_port) {
 
 void MainWindow::user_disconnected(const std::string& ip_with_tcp_port) {
     auto list = ui->list_peers->findItems(QString::fromStdString(ip_with_tcp_port), Qt::MatchExactly);
-    if (list.empty()) {
-        return;
-    }
-
     list.at(0)->~QListWidgetItem();
 }
 
