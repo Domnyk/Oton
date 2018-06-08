@@ -9,16 +9,18 @@ using namespace std;
 
 class Movie {
 public:
-	typedef vector<AudioStream> AudioStreams;
-
 	Movie(const std::string&);
 
     VideoStream& videoStream() {
         return videoStream_;
     }
+
+    AudioStream& audioStream() {
+        return audioStream_;
+    }
 private:
 	VideoStream videoStream_;
-	AudioStreams audioStreams_;
+    AudioStream audioStream_;
 };
 
 #endif

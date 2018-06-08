@@ -26,7 +26,9 @@ udp::socket& Connection::get_udp_socket() {
 }
 
 void Connection::start() {
-    unsigned const short port_num_len = 5;
+    std::cerr << "Connection::start() do nothing for now" << std::endl;
+
+    /* unsigned const short port_num_len = 5;
     boost::array<char, port_num_len> port_num_buf;
     try {
         boost::asio::read(tcp_socket_, boost::asio::buffer(port_num_buf, port_num_buf.size()));
@@ -54,6 +56,7 @@ void Connection::start() {
         return;
     }
 
+    */
     id_string_ = tcp_socket_.remote_endpoint().address().to_string() + " " + std::to_string(tcp_socket_.remote_endpoint().port());
     emit user_connects(id_string_);
 
@@ -133,6 +136,25 @@ bool Connection::handle_get_movie_list() {
     return is_client_ok;
 }
 
+void Connection::send_frame(unsigned int frame_num) {
+    protocol::message_type msg_type = protocol::GIVE_FRAME;
+    Frame frame = streamed_movie_->videoStream()
+                              .getFrame(frame_num)
+                              .resize(Resolution::get144p());
+
+    unsigned int num_of_frames = streamed_movie_->videoStream().get_num_of_frames();
+
+    prepare_header(msg_type, frame.data_length(), frame.getSize().width,
+                    frame.getSize().height, num_of_frames, frame_num, frame.is_key_frame());
+    message_.set_header(message_.get_header().encode());
+    message_.set_body(frame.data());
+
+    send_msg_with_frame(frame, msg_type);
+}
+
+void Connection::send_sample(unsigned int sample_num) {
+}
+
 bool Connection::handle_get_movie() {
     std::string movie_name = std::string(message_.body().get(), message_.get_header().get_body_len());
 
@@ -143,84 +165,44 @@ bool Connection::handle_get_movie() {
         return false;
     }
 
-    unique_ptr<Frame> frame;
-    unsigned int numOfFrames;
-    protocol::message_type msg_type = protocol::GIVE_FRAME;
     try {
-       frame = make_unique<Frame>(streamed_movie_->videoStream()
-                                .getFrame(0)
-                                .resize(Resolution::get144p()));
-
-       numOfFrames = streamed_movie_->videoStream().get_num_of_frames();
-    } catch (std::out_of_range& err) {
-        std::cerr << "No such movie on server. Exiting" << std::endl;
-        return false;
-    }
-
-    message_.get_header().set_msg_type(msg_type);
-    message_.get_header().set_body_len(frame->data_length());
-    message_.get_header().set_num_of_cols(frame->getSize().width);
-    message_.get_header().set_num_of_rows(frame->getSize().height);
-    message_.get_header().set_frame_num(0);
-    message_.get_header().set_num_of_frames(numOfFrames);
-    message_.get_header().set_is_key_frame(frame->is_key_frame());
-    message_.set_header(message_.get_header().encode());
-    message_.set_body(frame->data());
-
-    try {
-        send_msg_with_frame(*(frame.get()), msg_type);
+        send_frame(0);
     } catch (std::exception& err) {
-        std::cerr << "Error in Connection::handle_get_movie() during send_msg_with_frame: " << err.what() << std::endl;
-        return false;
+        std::cerr << "Error during send_frame(0): " << err.what() << std::endl;
     }
 
-    frame.reset(nullptr);
+    /* const AVPacket* av_packet;
+    try {
+        av_packet = &streamed_movie_->audioStream()
+                                                   .get_packets()
+                                                   .at(0);
+    } catch (std::exception& err) {
+        std::cout << "Error during av_packet construction: " << err.what() << std::endl;
+    } */
+
+    // msg_type = protocol::GIVE_SAMPLE;
+    // prepare_header(msg_type, );
+
     return true;
 }
 
 bool Connection::handle_get_frame() {
-    unique_ptr<Frame> frame;
-    unsigned num_of_frames;
-    protocol::Header& header = message_.get_header();
-    protocol::message_type msg_type = protocol::message_type::GIVE_FRAME;
-
     if(!streamed_movie_) {
         std::cerr << "No movie location set for server. Terminating connection" << std::endl;
         return false;
     }
 
     try {
-        frame = make_unique<Frame>(streamed_movie_->videoStream()
-                                .getFrame(message_.get_header().get_frame_num())
-                                .resize(Resolution::get144p()));
-
-        num_of_frames = streamed_movie_->videoStream().get_num_of_frames();
+        send_frame(message_.get_header().get_frame_num());
     } catch (std::exception& err) {
-        std::cerr << "An error occured during frame data retrive in handle_get_frame:" << err.what() << std::endl;
-        std::cerr << "Disconnecting user" << std::endl;
-        return false;
+        std::cerr << "Error during send_frame() in Connection::handle_get_frame(): " << err.what() << std::endl;
     }
-
-    /*
-     * No need to set frame number
-     * Frame number: provided by user in request
-     */
-    message_.get_header().set_msg_type(msg_type);
-    message_.get_header().set_body_len(frame->data_length());
-    message_.get_header().set_num_of_cols(frame->getSize().width);
-    message_.get_header().set_num_of_rows(frame->getSize().height);
-    // TODO: If client will always send num of frames then server don't need to set this field
-    message_.get_header().set_is_key_frame(frame->is_key_frame());
-    message_.get_header().set_num_of_frames(num_of_frames);
-    message_.set_header(message_.get_header().encode());
-    message_.set_body(frame->data());
-    send_msg_with_frame(*(frame.get()), msg_type);
 
     return true;
 }
 
 void Connection::send_msg_with_frame(const Frame& frame, protocol::message_type msg_type) {
-    try {
+    /* try {
         if (frame.is_key_frame()) {
             std::cerr << "Send by TCP" << std::endl;
             send_with_confirmation(tcp_socket_, msg_type);
@@ -230,7 +212,10 @@ void Connection::send_msg_with_frame(const Frame& frame, protocol::message_type 
         }
     } catch (std::exception& err) {
         std::cerr << "Error during send_with_confirmation: " << err.what() << std::endl;
-    }
+    } */
+
+    std::cerr << "Fix Connection::send_msg_with_frame()" << std::endl;
+    send_with_confirmation(tcp_socket_, msg_type);
 }
 
 bool Connection::disconnect_client() {
@@ -357,6 +342,19 @@ void Connection::server_close_btn_clicked() {
     if(udp_socket_.is_open()) {
         udp_socket_.close();
     }
+}
+
+void Connection::prepare_header(protocol::message_type msg_type, unsigned body_len, unsigned num_of_cols,
+                                unsigned num_of_rows, unsigned num_of_frames, unsigned frame_num, bool is_key_frame) {
+    protocol::Header& header = message_.get_header();
+
+    header.set_msg_type(msg_type);
+    header.set_body_len(body_len);
+    header.set_num_of_cols(num_of_cols);
+    header.set_num_of_rows(num_of_rows);
+    header.set_num_of_frames(num_of_frames);
+    header.set_frame_num(frame_num);
+    header.set_is_key_frame(is_key_frame);
 }
 
 

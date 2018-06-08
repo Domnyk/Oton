@@ -12,7 +12,7 @@ const unsigned int HEADER_LENGTH = 35;
 /*
  *  Max body length in bytes
  */
-const unsigned int MAX_BODY_LENGTH = 1000000;
+const unsigned long MAX_BODY_LENGTH = 9999999;
     class FieldLength {
     public:
         static const unsigned short msg_type = 2;

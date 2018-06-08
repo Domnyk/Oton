@@ -128,7 +128,14 @@ macx{
         -lopencv_videoio \
         -lopencv_imgproc \
         -lopencv_imgcodecs \
-        -lopencv_core
+        -lopencv_core \
+        -lao \
+        -lavformat \
+        -lavcodec \
+        -lavutil \
+        -lswscale \
+        -ldl \
+        -lm
 
         INCLUDEPATH += "/usr/local/include"
 }

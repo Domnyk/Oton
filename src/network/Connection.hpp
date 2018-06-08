@@ -47,7 +47,11 @@ private:
     void send_with_confirmation(tcp::socket&, protocol::message_type);
     void send_with_confirmation(udp::socket&, protocol::message_type);
 
+    void send_frame(unsigned int);
+
     bool is_confirmation_correct(protocol::message_type msg_type, protocol::message_type confirmation);
+
+    void prepare_header(protocol::message_type, unsigned, unsigned, unsigned, unsigned, unsigned, bool);
 
     protocol::Msg message_;
     unique_ptr<MovieLayer>& movie_layer_;
