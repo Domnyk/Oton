@@ -3,7 +3,7 @@
 #include <iostream>
 #include <opencv2/imgcodecs.hpp>
 #include <cstring>
-#include <boost/log/trivial.hpp>
+#include <thread>
 #include "Connection.hpp"
 #include "../movie/Resolution.hpp"
 #include "protocol/Constants.hpp"
@@ -26,8 +26,9 @@ udp::socket& Connection::get_udp_socket() {
 }
 
 void Connection::start() {
-    BOOST_LOG_TRIVIAL(info) << "Connection::start() is doing nothing for now" ;
-    BOOST_LOG_TRIVIAL(info) << "UNCOMMENT signal emiting" ;
+    std::cerr << "Connection::start() is doing nothing for now";
+    std::cerr << "UNCOMMENT signal emiting";
+
     /*
     unsigned const short port_num_len = 5;
     boost::array<char, port_num_len> port_num_buf;
@@ -75,16 +76,16 @@ void Connection::read() {
             read_with_confirmation();
         } catch (boost::system::system_error& err) {
             if (err.code().value() == boost::system::errc::no_such_file_or_directory) {
-                BOOST_LOG_TRIVIAL(info) << "Client has disconnected: " << err.what() <<  std::endl;
+                std::cerr << "Client has disconnected" << std::string(err.what()) << std::endl;
                 emit user_disconnects(id_string_);
                 return;
             }
         } catch (std::exception& err) {
-            BOOST_LOG_TRIVIAL(info) << "Error during read_with_confirmation. Terminating connection.";
+            std::cerr << "Error during read_with_confirmation. Terminating connection." << std::endl;
             return;
         }
 
-        BOOST_LOG_TRIVIAL(info) << "Received header is: " << message_.get_header().encode() ;
+        std::cerr << "Received header is: " + message_.get_header().encode() << std::endl;
 
         auto msg_type = message_.get_header().get_msg_type();
         switch (msg_type) {
@@ -104,7 +105,7 @@ void Connection::read() {
             is_client_ok = false;
             break;
         default:
-            BOOST_LOG_TRIVIAL(info) << "Unrecognized header";
+            std::cerr << "Unrecognized header" << std::endl;
             break;
         }
 
@@ -126,7 +127,7 @@ bool Connection::handle_get_movie_list() {
     try {
         send_with_confirmation(tcp_socket_, msg_type);
     } catch (std::exception& err) {
-        BOOST_LOG_TRIVIAL(info) << "Error during send_with_confirmation in handle_get_movie_list: " << err.what() ;
+        std::cerr << "Error during send_with_confirmation in handle_get_movie_list: " << std::string(err.what()) << std::endl;
         is_client_ok = false;
     }
 
@@ -143,11 +144,11 @@ bool Connection::handle_get_movie() {
     try {
        frame = make_unique<Frame>(streamed_movie_->videoStream()
                                 .getFrame(0)
-                                .resize(Resolution::get360p()));
+                                .resize(Resolution::get144p()));
 
        numOfFrames = streamed_movie_->videoStream().get_num_of_frames();
     } catch (std::out_of_range& err) {
-        BOOST_LOG_TRIVIAL(info) << "No such movie on server. Exiting" ;
+        std::cerr << "No such movie on server. Exiting" << std::endl;
         return false;
     }
 
@@ -164,7 +165,7 @@ bool Connection::handle_get_movie() {
     try {
         send_msg_with_frame(*(frame.get()), msg_type);
     } catch (std::exception& err) {
-        BOOST_LOG_TRIVIAL(info) << "Error in Connection::handle_get_movie() during send_msg_with_frame: " << err.what() ;
+        std::cerr << "Error in Connection::handle_get_movie() during send_msg_with_frame: " << err.what() << std::endl;
         return false;
     }
 
@@ -181,12 +182,12 @@ bool Connection::handle_get_frame() {
     try {
         frame = make_unique<Frame>(streamed_movie_->videoStream()
                                 .getFrame(message_.get_header().get_frame_num())
-                                .resize(Resolution::get360p()));
+                                .resize(Resolution::get144p()));
 
         num_of_frames = streamed_movie_->videoStream().get_num_of_frames();
     } catch (std::exception& err) {
-        BOOST_LOG_TRIVIAL(info) << "An error occured during frame data retrive in handle_get_frame:" << err.what() ;
-        BOOST_LOG_TRIVIAL(info) << "Disconnecting user" ;
+        std::cerr << "An error occured during frame data retrive in handle_get_frame:" << err.what() << std::endl;
+        std::cerr << "Disconnecting user" << std::endl;
         return false;
     }
 
@@ -207,7 +208,7 @@ bool Connection::handle_get_frame() {
     try {
         send_msg_with_frame(*(frame.get()), msg_type);
     } catch (std::exception& err) {
-        BOOST_LOG_TRIVIAL(info) << "Error in Connection::handle_get_frame() during send_msg_with_frame: " << err.what() ;
+        std::cerr << "Error in Connection::handle_get_frame() during send_msg_with_frame: " << err.what() << std::endl;
         return false;
     }
     return true;
@@ -233,7 +234,7 @@ void Connection::disconnect_client() {
                 tcp_socket_.shutdown(tcp::socket::shutdown_both);
                 tcp_socket_.close();
             } catch (std::exception& err) {
-                BOOST_LOG_TRIVIAL(info) << "Exception during TCP socket shutdown and close: " << err.what() ;
+                std::cerr << "Exception during TCP socket shutdown and close: " << err.what() << std::endl;
             }
         });
     }
@@ -244,7 +245,7 @@ void Connection::disconnect_client() {
                 udp_socket_.shutdown(udp::socket::shutdown_both);
                 udp_socket_.close();
             } catch (std::exception& err) {
-                BOOST_LOG_TRIVIAL(info) << "Exception during UDP socket shutdown and close: " << err.what() ;
+                std::cerr << "Exception during UDP socket shutdown and close: " << err.what() << std::endl;
             }
         });
     }
@@ -282,8 +283,7 @@ void Connection::read_body() {
 
 void Connection::send_header() {
     std::string header(message_.data().get(), protocol::HEADER_LENGTH);
-    // BOOST_LOG_TRIVIAL(info) << "Header to send: " << header ;
-    BOOST_LOG_TRIVIAL(info) << "Header to send: " << header ;
+    std::cerr << "Header to send: " << header << std::endl;
 
     boost::asio::write(tcp_socket_, boost::asio::buffer(message_.data().get(), protocol::HEADER_LENGTH));
 }
