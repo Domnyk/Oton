@@ -62,10 +62,19 @@ void FrameTest::it_should_resize_image_when_resolution_is_smaller_than_original(
     QCOMPARE(resizedFrame.getPixelMatrix().channels(), expected_num_of_channels);
 }
 
-void FrameTest::is_key_frame_should_always_return_true() {
+void FrameTest::frame_with_number_divisible_by_param_should_be_key_frame() {
     Frame frame;
 
     QCOMPARE(frame.is_key_frame(), true);
+}
+
+void FrameTest::frame_with_number_not_divisible_by_param_should_not_be_key_frame() {
+    cv::Mat mat;
+    unsigned short frame_num = 11;
+
+    Frame frame(frame_num, mat);
+
+    QCOMPARE(frame.is_key_frame(), false);
 }
 
 

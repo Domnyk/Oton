@@ -24,13 +24,15 @@ signals:
 public slots:
     void server_close_btn_clicked();
 private:
-    void read();
+    void communicate();
+    bool handle_received_msg(protocol::message_type);
+
 
     bool handle_get_movie_list();
     bool handle_get_movie();
     bool handle_get_frame();
     bool handle_movie_finished();
-    bool handle_disconnect();
+    bool disconnect_client();
 
     unsigned int read_header();
     void read_body();
@@ -52,4 +54,5 @@ private:
     tcp::socket tcp_socket_;
     udp::socket udp_socket_;
     unique_ptr<Movie> streamed_movie_;
+    string id_string_;
 };

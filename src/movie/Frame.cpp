@@ -47,6 +47,9 @@ unsigned int Frame::data_length() const {
 }
 
 bool Frame::is_key_frame() const {
-    std::cerr << "Frame::is_key_frame returns always true" << std::endl;
-    return true;
+    if(frameNum_ % Frame::KEY_FRAME_PARAM == 0) {
+        return true;
+    }
+
+    return false;
 }

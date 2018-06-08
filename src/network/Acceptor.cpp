@@ -73,6 +73,9 @@ void Acceptor::tcp_handle_accept(shared_ptr<Connection> connection_ptr, const bo
 }
 
 bool Acceptor::is_max_num_of_clients_reached() const {
+    std::cerr << "curr_num_of_clients: " << curr_num_of_clients_ << std::endl;
+    std::cerr << "max_num_of_clients: " << max_num_of_clients_ << std::endl;
+
     return curr_num_of_clients_ >= max_num_of_clients_;
 }
 

@@ -6,6 +6,8 @@ using namespace cv;
 
 class Frame {
 public:
+    static const unsigned short KEY_FRAME_PARAM = 5;
+
     Frame();
 	Frame(unsigned, Mat);
 
