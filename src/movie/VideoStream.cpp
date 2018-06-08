@@ -23,7 +23,7 @@ void VideoStream::open(const string& fileName) {
 	}
 }
 
-Frame VideoStream::getFrame(unsigned frameNum) {
+Frame VideoStream::get_frame(unsigned frameNum) {
 	if (frameNum > num_of_frames_ - 1 ) {
 		string errorMsg = "Frame index exceeded. Last frame index number: " + 
 							to_string(num_of_frames_  - 1) + 

@@ -26,7 +26,6 @@ void Acceptor::tcp_start_accept() {
     QObject::connect(&(*connection_ptr), &Connection::user_connects, this, &Acceptor::user_connected);
     QObject::connect(&(*connection_ptr), &Connection::user_disconnects, this, &Acceptor::user_disconnected);
 
-    // Signal chaining
     QObject::connect(&(*connection_ptr), &Connection::user_connects, this, &Acceptor::user_connects);
     QObject::connect(&(*connection_ptr), &Connection::user_disconnects, this, &Acceptor::user_disconnects);
     QObject::connect(this, &Acceptor::server_closes, &(*connection_ptr), &Connection::server_closes);
@@ -35,6 +34,7 @@ void Acceptor::tcp_start_accept() {
                                boost::bind(&Acceptor::tcp_handle_accept, this,
                                            connection_ptr, boost::asio::placeholders::error)
     );
+
 }
 
 

@@ -13,9 +13,9 @@ public:
 
 	Frame resize(Size);
 
-    const Mat& getPixelMatrix() const;
+    const Mat& get_pixel_matrix() const;
 
-    const Size getSize() const;
+    const Size get_size() const;
 
     bool is_key_frame() const;
 
@@ -23,6 +23,6 @@ public:
     unsigned const char* data() const;
     unsigned int data_length() const;
 private:
-    unsigned frameNum_;
-	Mat pixelMatrix_;
+    unsigned frame_num_;
+    Mat pixel_matrix_;
 };

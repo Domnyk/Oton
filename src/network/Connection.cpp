@@ -57,6 +57,7 @@ void Connection::start() {
     }
 
     */
+
     id_string_ = tcp_socket_.remote_endpoint().address().to_string() + " " + std::to_string(tcp_socket_.remote_endpoint().port());
     emit user_connects(id_string_);
 
@@ -139,20 +140,17 @@ bool Connection::handle_get_movie_list() {
 void Connection::send_frame(unsigned int frame_num) {
     protocol::message_type msg_type = protocol::GIVE_FRAME;
     Frame frame = streamed_movie_->videoStream()
-                              .getFrame(frame_num)
+                              .get_frame(frame_num)
                               .resize(Resolution::get144p());
 
     unsigned int num_of_frames = streamed_movie_->videoStream().get_num_of_frames();
 
-    prepare_header(msg_type, frame.data_length(), frame.getSize().width,
-                    frame.getSize().height, num_of_frames, frame_num, frame.is_key_frame());
+    prepare_header(msg_type, frame.data_length(), frame.get_size().width,
+                    frame.get_size().height, num_of_frames, frame_num, frame.is_key_frame());
     message_.set_header(message_.get_header().encode());
     message_.set_body(frame.data());
 
     send_msg_with_frame(frame, msg_type);
-}
-
-void Connection::send_sample(unsigned int sample_num) {
 }
 
 bool Connection::handle_get_movie() {
@@ -170,18 +168,6 @@ bool Connection::handle_get_movie() {
     } catch (std::exception& err) {
         std::cerr << "Error during send_frame(0): " << err.what() << std::endl;
     }
-
-    /* const AVPacket* av_packet;
-    try {
-        av_packet = &streamed_movie_->audioStream()
-                                                   .get_packets()
-                                                   .at(0);
-    } catch (std::exception& err) {
-        std::cout << "Error during av_packet construction: " << err.what() << std::endl;
-    } */
-
-    // msg_type = protocol::GIVE_SAMPLE;
-    // prepare_header(msg_type, );
 
     return true;
 }

@@ -37,7 +37,6 @@ SOURCES += \
     src/movie/Frame.cpp \
     src/movie/Movie.cpp \
     src/movie/VideoStream.cpp \
-    src/server/network_layer.cpp \
     src/network/protocol/Header.cpp \
     src/network/Acceptor.cpp \
     src/network/Connection.cpp \
@@ -45,7 +44,8 @@ SOURCES += \
     src/network/protocol/Msg.cpp \
     tests/MsgTest.cpp \
     tests/MovieLayerTest.cpp \
-    src/server/MovieLayer.cpp
+    src/server/MovieLayer.cpp \
+    src/server/NetworkLayer.cpp
 
 HEADERS += \
     tests/test_example.h \
@@ -56,7 +56,6 @@ HEADERS += \
     src/movie/Movie.hpp \
     src/movie/Resolution.hpp \
     src/movie/VideoStream.hpp \
-    src/server/network_layer.hpp \
     src/network/protocol/message_type.hpp \
     src/network/protocol/Header.hpp \
     src/network/protocol/Constants.hpp \
@@ -66,7 +65,8 @@ HEADERS += \
     src/network/protocol/Msg.hpp \
     tests/MsgTest.hpp \
     tests/MovieLayerTest.hpp \
-    src/server/MovieLayer.hpp
+    src/server/MovieLayer.hpp \
+    src/server/NetworkLayer.hpp
 
 test {
     message(Test build)

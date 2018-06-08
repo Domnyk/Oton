@@ -42,10 +42,7 @@ void Msg::set_body(std::string str) {
 
     header_.set_body_len(str_size);
 
-    std::cerr << "Passed argument to Msg::set_body(): " << str << std::endl;
-
     const char* c_str = str.c_str();
-    // strcpy(data_.get() + HEADER_LENGTH, c_str);
     strcpy(body().get(), c_str);
 }
 

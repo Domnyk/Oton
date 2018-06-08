@@ -5,10 +5,10 @@
 
 using namespace std;
 
-Frame::Frame() : frameNum_(), pixelMatrix_() {}
+Frame::Frame() : frame_num_(), pixel_matrix_() {}
 
 Frame::Frame(unsigned frameNum, Mat pixelMatrix) :
-    frameNum_(frameNum), pixelMatrix_(pixelMatrix.clone()) {
+    frame_num_(frameNum), pixel_matrix_(pixelMatrix.clone()) {
 }
 
 Frame Frame::resize(Size desiredSize) {
@@ -16,38 +16,38 @@ Frame Frame::resize(Size desiredSize) {
 	unsigned const scaleFactorX = 0;
 	unsigned const scaleFactorY = 0;
 
-	const Size sourceSize = getSize();
+    const Size sourceSize = get_size();
 	if (sourceSize.width < desiredSize.width || sourceSize.height < desiredSize.height) {
 		throw runtime_error("Desired size is bigger than source size");
 	}
 
-    ::resize(this->pixelMatrix_, resizedFrame.pixelMatrix_, desiredSize,
+    ::resize(this->pixel_matrix_, resizedFrame.pixel_matrix_, desiredSize,
             scaleFactorX, scaleFactorY, INTER_AREA);
 
 	return resizedFrame;
 }
 
- const Mat& Frame::getPixelMatrix() const {
-    return pixelMatrix_;
+ const Mat& Frame::get_pixel_matrix() const {
+    return pixel_matrix_;
 }
- const Size Frame::getSize() const {
-    return Size(pixelMatrix_.cols, pixelMatrix_.rows);
+ const Size Frame::get_size() const {
+    return Size(pixel_matrix_.cols, pixel_matrix_.rows);
 }
 
 unsigned char* Frame::data() {
-    return pixelMatrix_.data;
+    return pixel_matrix_.data;
 }
 
 unsigned const char* Frame::data() const {
-    return pixelMatrix_.data;
+    return pixel_matrix_.data;
 }
 
 unsigned int Frame::data_length() const {
-    return pixelMatrix_.total() * pixelMatrix_.elemSize();
+    return pixel_matrix_.total() * pixel_matrix_.elemSize();
 }
 
 bool Frame::is_key_frame() const {
-    if(frameNum_ % Frame::KEY_FRAME_PARAM == 0) {
+    if(frame_num_ % Frame::KEY_FRAME_PARAM == 0) {
         return true;
     }
 

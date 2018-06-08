@@ -100,7 +100,6 @@ void MainWindow::on_btn_open_server_clicked()
     ui->btn_open_server->setEnabled(false);
     ui->btn_close_server->setEnabled(true);
     ui->edit_max_num_of_clients->setEnabled(false);
-    std::string host_address = ui->edit_host_address->text().toStdString();
 
     unsigned short max_num_of_clients = 1;
     try {
@@ -109,18 +108,19 @@ void MainWindow::on_btn_open_server_clicked()
         std::cerr << "Error during 'max number of clients' field conversion" << std::endl;
     }
     server_.init_network_layer(max_num_of_clients);
+    ui->edit_max_num_of_clients->setText(QString::fromStdString(std::to_string(max_num_of_clients)));
 
     qRegisterMetaType<std::string>("std::string");
 
     /*
      * Connect network_layer to peer list
      */
-    QObject::connect(&(*server_.get_network_layer()), &network_layer::user_connects,
+    QObject::connect(&(*server_.get_network_layer()), &NetworkLayer::user_connects,
                      this, &MainWindow::user_connected);
-    QObject::connect(&(*server_.get_network_layer()), &network_layer::user_disconnects,
+    QObject::connect(&(*server_.get_network_layer()), &NetworkLayer::user_disconnects,
                      this, &MainWindow::user_disconnected);
 
-    QObject::connect(this, &MainWindow::server_closes, &(*server_.get_network_layer()), &network_layer::server_closes);
+    QObject::connect(this, &MainWindow::server_closes, &(*server_.get_network_layer()), &NetworkLayer::server_closes);
 
     unsigned short tcp_port = server_.get_tcp_port();
     ui->tcp_port->setText(QString::fromStdString(to_string(tcp_port)));

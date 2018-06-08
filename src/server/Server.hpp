@@ -1,6 +1,6 @@
 #include <vector>
 #include <string>
-#include "network_layer.hpp"
+#include "NetworkLayer.hpp"
 #include "MovieLayer.hpp"
 
 using namespace std;
@@ -10,7 +10,7 @@ public:
     Server();
     Server(MovieLayer*);
 
-    unique_ptr<network_layer>& get_network_layer() {
+    unique_ptr<NetworkLayer>& get_network_layer() {
         return network_layer_;
     }
 
@@ -33,6 +33,6 @@ public:
 
     void init_network_layer(const unsigned short);
 private:
-    unique_ptr<network_layer> network_layer_;
+    unique_ptr<NetworkLayer> network_layer_;
     unique_ptr<MovieLayer> movie_layer_;
 };

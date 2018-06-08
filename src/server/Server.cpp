@@ -9,5 +9,5 @@ void Server::init_network_layer(const unsigned short max_num_of_clients) {
         return;
     }
 
-    network_layer_ = unique_ptr<network_layer>(new network_layer(movie_layer_, max_num_of_clients));
+    network_layer_ = unique_ptr<NetworkLayer>(new NetworkLayer(movie_layer_, max_num_of_clients));
 }

@@ -1,11 +1,11 @@
 #include <iostream>
 #include <algorithm>
-#include "network_layer.hpp"
+#include "NetworkLayer.hpp"
 
-const unsigned short network_layer::DEFAULT_NUM_OF_THREAD_FOR_ASIO = 5;
-const unsigned short network_layer::DEFAULT_MAX_NUM_OF_CLIENTS = 5;
+const unsigned short NetworkLayer::DEFAULT_NUM_OF_THREAD_FOR_ASIO = 5;
+const unsigned short NetworkLayer::DEFAULT_MAX_NUM_OF_CLIENTS = 5;
 
-network_layer::network_layer(unique_ptr<MovieLayer>& movie_layer,
+NetworkLayer::NetworkLayer(unique_ptr<MovieLayer>& movie_layer,
                              const unsigned short max_num_of_clients,
                              const unsigned short threads_num) :
     threads_num_(threads_num),
@@ -13,9 +13,9 @@ network_layer::network_layer(unique_ptr<MovieLayer>& movie_layer,
     io_context(),
     acceptor_(io_context, movie_layer_, max_num_of_clients),
     threads() {
-    QObject::connect(&acceptor_, &Acceptor::user_connects, this, &network_layer::user_connects);
-    QObject::connect(&acceptor_, &Acceptor::user_disconnects, this, &network_layer::user_disconnects);
-    QObject::connect(this, &network_layer::server_closes, &acceptor_, &Acceptor::server_closes);
+    QObject::connect(&acceptor_, &Acceptor::user_connects, this, &NetworkLayer::user_connects);
+    QObject::connect(&acceptor_, &Acceptor::user_disconnects, this, &NetworkLayer::user_disconnects);
+    QObject::connect(this, &NetworkLayer::server_closes, &acceptor_, &Acceptor::server_closes);
 
     for (int i = 0; i < threads_num_; ++i) {
         threads.emplace_back(
@@ -30,10 +30,10 @@ network_layer::network_layer(unique_ptr<MovieLayer>& movie_layer,
     }
 }
 
-network_layer::~network_layer() {
+NetworkLayer::~NetworkLayer() {
     io_context.stop();
 }
 
-unsigned short network_layer::get_tcp_port() const {
+unsigned short NetworkLayer::get_tcp_port() const {
     return acceptor_.get_tcp_port();
 }

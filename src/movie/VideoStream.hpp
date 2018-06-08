@@ -12,13 +12,13 @@ class VideoStream {
 public:
 	VideoStream(const std::string&);
 	void open(const std::string&);
-	Frame getFrame(unsigned);
+    Frame get_frame(unsigned);
 
     unsigned get_num_of_frames() {
         return num_of_frames_;
     }
 private:
-	VideoCapture videoCapture_;
+    VideoCapture video_capture_;
     unsigned num_of_frames_;
 };
 

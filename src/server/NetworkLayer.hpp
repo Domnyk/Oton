@@ -9,16 +9,16 @@
 #include "../network/Acceptor.hpp"
 #include "MovieLayer.hpp"
 
-class network_layer : public QObject
+class NetworkLayer : public QObject
 {
     Q_OBJECT
 
 public:
-    network_layer(unique_ptr<MovieLayer>&,
-                  const unsigned short max_num_of_clients = network_layer::DEFAULT_MAX_NUM_OF_CLIENTS,
-                  const unsigned short threads_num  = network_layer::DEFAULT_NUM_OF_THREAD_FOR_ASIO);
+    NetworkLayer(unique_ptr<MovieLayer>&,
+                  const unsigned short max_num_of_clients = NetworkLayer::DEFAULT_MAX_NUM_OF_CLIENTS,
+                  const unsigned short threads_num  = NetworkLayer::DEFAULT_NUM_OF_THREAD_FOR_ASIO);
 
-    ~network_layer();
+    ~NetworkLayer();
 
     static const unsigned short DEFAULT_NUM_OF_THREAD_FOR_ASIO;
     static const unsigned short DEFAULT_MAX_NUM_OF_CLIENTS;
