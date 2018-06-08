@@ -17,15 +17,6 @@ Header::Header(message_type message_type, unsigned int body_len) : msg_type_(mes
     encode();
 }
 
-Header::Header(message_type msg_type, unsigned int body_len,
-               unsigned short num_of_cols, unsigned short num_of_rows,
-               unsigned int num_of_frames, unsigned int frame_num) : msg_type_(msg_type),
-                                                                     body_len_(body_len),
-                                                                     num_of_cols_(num_of_cols),
-                                                                     num_of_rows_(num_of_rows),
-                                                                     num_of_frames_(num_of_frames),
-                                                                     frame_num_(frame_num) {}
-
 unsigned int Header::parse_field(unsigned short field_length, unsigned short field_offset, const std::string& str_data) const {
     return static_cast<unsigned int>(std::stoul(str_data.substr(field_offset, field_length)));
 }
@@ -39,6 +30,7 @@ void Header::parse(const char* data) {
     num_of_rows_ = parse_field(FieldLength::num_of_rows, FieldOffset::num_of_rows, str_data);
     num_of_frames_ = parse_field(FieldLength::num_of_frames, FieldOffset::num_of_frames, str_data);
     frame_num_ = parse_field(FieldLength::frame_num, FieldOffset::frame_num, str_data);
+    is_key_frame_ = static_cast<bool>(parse_field(FieldLength::is_key_frame, FieldOffset::is_key_frame, str_data));
 }
 
 std::string Header::encode_field(unsigned short field_length, unsigned int field_value) {
@@ -60,8 +52,9 @@ std::string Header::encode() {
     string num_of_rows = encode_field(FieldLength::num_of_rows, num_of_rows_);
     string num_of_frames = encode_field(FieldLength::num_of_frames, num_of_frames_);
     string frame_num = encode_field(FieldLength::frame_num, frame_num_);
+    string is_key_frame = encode_field(FieldLength::is_key_frame, is_key_frame_);
 
-    header = msg_type + body_len + num_of_cols + num_of_rows + num_of_frames + frame_num;
+    header = msg_type + body_len + num_of_cols + num_of_rows + num_of_frames + frame_num + is_key_frame;
     return header;
 }
 
@@ -90,6 +83,10 @@ unsigned int Header::get_frame_num() const {
     return frame_num_;
 }
 
+bool Header::get_is_key_frame() const {
+    return is_key_frame_;
+}
+
 void Header::set_msg_type(message_type msg_type) {
     msg_type_ = msg_type;
 }
@@ -111,4 +108,8 @@ void Header::set_num_of_frames(unsigned num_of_frames) {
 
 void Header::set_frame_num(unsigned frame_num) {
     frame_num_ = frame_num;
+}
+
+void Header::set_is_key_frame(bool is_key_frame) {
+    is_key_frame_ = is_key_frame;
 }

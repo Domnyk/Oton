@@ -10,8 +10,6 @@ namespace protocol {
     public:
         Header();
         Header(protocol::message_type, unsigned int);
-        Header(protocol::message_type, unsigned int, unsigned short,
-               unsigned short, unsigned int, unsigned int);
 
         message_type get_msg_type() const;
         unsigned int get_body_len() const;
@@ -19,6 +17,7 @@ namespace protocol {
         unsigned short get_num_of_rows() const;
         unsigned int get_num_of_frames() const;
         unsigned int get_frame_num() const;
+        bool get_is_key_frame() const;
 
         void set_msg_type(message_type);
         void set_body_len(unsigned int);
@@ -26,6 +25,7 @@ namespace protocol {
         void set_num_of_rows(unsigned short);
         void set_num_of_frames(unsigned);
         void set_frame_num(unsigned);
+        void set_is_key_frame(bool);
 
         void parse(const char* data);
 
@@ -41,6 +41,7 @@ namespace protocol {
         unsigned short num_of_rows_ = 0;
         unsigned int num_of_frames_ = 0;
         unsigned int frame_num_ = 0;
+        bool is_key_frame_ = false;
     };
 }
 

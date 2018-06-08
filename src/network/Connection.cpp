@@ -157,24 +157,31 @@ bool Connection::handle_get_movie() {
     message_.get_header().set_num_of_rows(frame->getSize().height);
     message_.get_header().set_frame_num(0);
     message_.get_header().set_num_of_frames(numOfFrames);
+    message_.get_header().set_is_key_frame(frame->is_key_frame());
     message_.set_header(message_.get_header().encode());
     message_.set_body(frame->data());
-    send_msg_with_frame(*(frame.get()), msg_type);
+
+    try {
+        send_msg_with_frame(*(frame.get()), msg_type);
+    } catch (std::exception& err) {
+        BOOST_LOG_TRIVIAL(info) << "Error in Connection::handle_get_movie() during send_msg_with_frame: " << err.what() ;
+        return false;
+    }
 
     frame.reset(nullptr);
     return true;
 }
 
 bool Connection::handle_get_frame() {
-    Frame frame;
+    unique_ptr<Frame> frame;
     unsigned num_of_frames;
     protocol::Header& header = message_.get_header();
     protocol::message_type msg_type = protocol::message_type::GIVE_FRAME;
 
     try {
-        frame = streamed_movie_->videoStream()
+        frame = make_unique<Frame>(streamed_movie_->videoStream()
                                 .getFrame(message_.get_header().get_frame_num())
-                                .resize(Resolution::get360p());
+                                .resize(Resolution::get360p()));
 
         num_of_frames = streamed_movie_->videoStream().get_num_of_frames();
     } catch (std::exception& err) {
@@ -188,16 +195,17 @@ bool Connection::handle_get_frame() {
      * Frame number: provided by user in request
      */
     message_.get_header().set_msg_type(msg_type);
-    message_.get_header().set_body_len(frame.data_length());
-    message_.get_header().set_num_of_cols(frame.getSize().width);
-    message_.get_header().set_num_of_rows(frame.getSize().height);
+    message_.get_header().set_body_len(frame->data_length());
+    message_.get_header().set_num_of_cols(frame->getSize().width);
+    message_.get_header().set_num_of_rows(frame->getSize().height);
     // TODO: If client will always send num of frames then server don't need to set this field
+    message_.get_header().set_is_key_frame(frame->is_key_frame());
     message_.get_header().set_num_of_frames(num_of_frames);
     message_.set_header(message_.get_header().encode());
-    message_.set_body(frame.data());
+    message_.set_body(frame->data());
 
     try {
-        send_msg_with_frame(frame, msg_type);
+        send_msg_with_frame(*(frame.get()), msg_type);
     } catch (std::exception& err) {
         BOOST_LOG_TRIVIAL(info) << "Error in Connection::handle_get_frame() during send_msg_with_frame: " << err.what() ;
         return false;
@@ -273,7 +281,7 @@ void Connection::read_body() {
 }
 
 void Connection::send_header() {
-    std::string header(message_.data().get(), 34);
+    std::string header(message_.data().get(), protocol::HEADER_LENGTH);
     // BOOST_LOG_TRIVIAL(info) << "Header to send: " << header ;
     BOOST_LOG_TRIVIAL(info) << "Header to send: " << header ;
 

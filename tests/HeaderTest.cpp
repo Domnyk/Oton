@@ -108,22 +108,30 @@ void HeaderTest::when_data_is_correct_it_should_properly_parse_frame_num() {
     QCOMPARE(header.get_frame_num(), expected_value);
 }
 
-void HeaderTest::encode_constructor_should_set_proper_values() {
-    protocol::message_type msg_type = protocol::GET_MOVIE_LIST;
-    unsigned int body_len = 1000;
-    unsigned short num_of_cols = 256;
-    unsigned short num_of_rows = 144;
-    unsigned int num_of_frames = 1000;
-    unsigned int frame_num = 1;
+void HeaderTest::when_frame_is_keyframe_parse_method_should_return_true() {
+    const unsigned short POS_OF_IS_KEY_FRAME = 34;
+    const bool expected_value = true;
+    std::array<char, protocol::HEADER_LENGTH> header_data{{ '0' }};
+    header_data.fill('0');
+    header_data.at(POS_OF_IS_KEY_FRAME) = '1';
 
-    protocol::Header header(msg_type, body_len, num_of_cols, num_of_rows, num_of_frames, frame_num);
+    protocol::Header header;
+    header.parse(header_data.data());
 
-    QCOMPARE(header.get_msg_type(), msg_type);
-    QCOMPARE(header.get_body_len(), body_len);
-    QCOMPARE(header.get_num_of_cols(), num_of_cols);
-    QCOMPARE(header.get_num_of_rows(), num_of_rows);
-    QCOMPARE(header.get_num_of_frames(), num_of_frames);
-    QCOMPARE(header.get_frame_num(), frame_num);
+    QCOMPARE(header.get_is_key_frame(), expected_value);
+}
+
+void HeaderTest::when_frame_is_not_keyframe_parse_method_should_return_false() {
+    const unsigned short POS_OF_IS_KEY_FRAME = 34;
+    const bool expected_value = false;
+    std::array<char, protocol::HEADER_LENGTH> header_data{{ '0' }};
+    header_data.fill('0');
+    header_data.at(POS_OF_IS_KEY_FRAME) = '0';
+
+    protocol::Header header;
+    header.parse(header_data.data());
+
+    QCOMPARE(header.get_is_key_frame(), expected_value);
 }
 
 void HeaderTest::should_properly_encode_header() {
@@ -133,8 +141,17 @@ void HeaderTest::should_properly_encode_header() {
     unsigned short num_of_rows = 144;
     unsigned int num_of_frames = 1000;
     unsigned int frame_num = 1;
+    bool is_key_frame = true;
 
-    protocol::Header header(msg_type, body_len, num_of_cols, num_of_rows, num_of_frames, frame_num);
+    protocol::Header header;
+    header.set_msg_type(msg_type);
+    header.set_body_len(body_len);
+    header.set_num_of_cols(num_of_cols);
+    header.set_num_of_rows(num_of_rows);
+    header.set_num_of_frames(num_of_frames);
+    header.set_frame_num(frame_num);
+    header.set_is_key_frame(is_key_frame);
+
     std::string encoded_header = header.encode();
     header.parse(encoded_header.data());
 
@@ -144,6 +161,7 @@ void HeaderTest::should_properly_encode_header() {
     QCOMPARE(header.get_num_of_rows(), num_of_rows);
     QCOMPARE(header.get_num_of_frames(), num_of_frames);
     QCOMPARE(header.get_frame_num(), frame_num);
+    QCOMPARE(header.get_is_key_frame(), is_key_frame);
 }
 
 

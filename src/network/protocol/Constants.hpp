@@ -7,7 +7,7 @@ namespace protocol {
 /*
  *  Header length in bytes
  */
-const unsigned int HEADER_LENGTH = 34;
+const unsigned int HEADER_LENGTH = 35;
 
 /*
  *  Max body length in bytes
@@ -21,6 +21,7 @@ const unsigned int MAX_BODY_LENGTH = 1000000;
         static const unsigned short num_of_rows = 4;
         static const unsigned short num_of_frames = 8;
         static const unsigned short frame_num = 8;
+        static const unsigned short is_key_frame = 1;
     };
 
     class FieldOffset {
@@ -31,6 +32,7 @@ const unsigned int MAX_BODY_LENGTH = 1000000;
         static const unsigned short num_of_rows = 14;
         static const unsigned short num_of_frames = 18;
         static const unsigned short frame_num = 26;
+        static const unsigned short is_key_frame = 34;
     };
 }
 
