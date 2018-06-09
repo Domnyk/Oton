@@ -32,7 +32,7 @@ signals:
     void server_closes();
 private:
     const unsigned short threads_num_;
-    unique_ptr<MovieList>& movie_layer_;
+    unique_ptr<MovieList>& movie_list_;
 
     boost::asio::io_context io_context;
     Acceptor acceptor_;

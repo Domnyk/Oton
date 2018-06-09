@@ -25,9 +25,9 @@ void MainWindow::on_edit_host_address_textChanged(const QString& /* arg1 */)
 void MainWindow::on_btn_choose_file_clicked(bool /* checked */)
 {
     string movie_filepath = QFileDialog::getOpenFileName(this, "Add movie", QString(), tr("Movies (*.avi *.mp4)")).toStdString();
-    bool is_movie_already_on_list = server_.get_movie_layer()->add_movie(movie_filepath);
+    bool movie_added = server_.get_movie_layer()->add_movie(movie_filepath);
 
-    if(is_movie_already_on_list) {
+    if(!movie_added) {
         ui->status_value_label->setText(QString::fromStdString("Movie already on list!"));
         return;
     }
