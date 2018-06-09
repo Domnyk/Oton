@@ -6,7 +6,7 @@
 #include <memory>
 #include <QObject>
 #include "Connection.hpp"
-#include "../server/MovieLayer.hpp"
+#include "../server/MovieList.hpp"
 
 using namespace boost::asio::ip;
 
@@ -14,7 +14,7 @@ class Acceptor : public QObject
 {
     Q_OBJECT
 public:
-    Acceptor(boost::asio::io_context&, unique_ptr<MovieLayer>&, const unsigned short);
+    Acceptor(boost::asio::io_context&, unique_ptr<MovieList>&, const unsigned short);
 
     unsigned short get_tcp_port() const;
     unsigned short get_udp_port() const;
@@ -33,7 +33,7 @@ private:
     bool is_max_num_of_clients_reached() const;
 
     tcp::acceptor tcp_acceptor_;
-    unique_ptr<MovieLayer>& movie_layer_;
+    unique_ptr<MovieList>& movie_list_;
     const unsigned short max_num_of_clients_;
     unsigned short curr_num_of_clients_;
 };

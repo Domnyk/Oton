@@ -5,13 +5,13 @@
 const unsigned short NetworkLayer::DEFAULT_NUM_OF_THREAD_FOR_ASIO = 5;
 const unsigned short NetworkLayer::DEFAULT_MAX_NUM_OF_CLIENTS = 5;
 
-NetworkLayer::NetworkLayer(unique_ptr<MovieLayer>& movie_layer,
+NetworkLayer::NetworkLayer(unique_ptr<MovieList>& movie_list,
                              const unsigned short max_num_of_clients,
                              const unsigned short threads_num) :
     threads_num_(threads_num),
-    movie_layer_(movie_layer),
+    movie_list_(movie_list),
     io_context(),
-    acceptor_(io_context, movie_layer_, max_num_of_clients),
+    acceptor_(io_context, movie_list_, max_num_of_clients),
     threads() {
     QObject::connect(&acceptor_, &Acceptor::user_connects, this, &NetworkLayer::user_connects);
     QObject::connect(&acceptor_, &Acceptor::user_disconnects, this, &NetworkLayer::user_disconnects);

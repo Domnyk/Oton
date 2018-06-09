@@ -10,8 +10,8 @@
 
 const unsigned int MAX_DATAGRAM_SIZE = 1000;
 
-Connection::Connection(boost::asio::io_context& io_context, unique_ptr<MovieLayer>& movie_layer)
-    : movie_layer_(movie_layer), tcp_socket_(io_context), udp_socket_(io_context),
+Connection::Connection(boost::asio::io_context& io_context, unique_ptr<MovieList>& movie_list)
+    : movie_list_(movie_list), tcp_socket_(io_context), udp_socket_(io_context),
       streamed_movie_(nullptr) {
 
     QObject::connect(this, &Connection::server_closes, this, &Connection::server_close_btn_clicked);
@@ -119,7 +119,7 @@ bool Connection::handle_received_msg(protocol::message_type msg_type) {
 
 bool Connection::handle_get_movie_list() {
     bool is_client_ok = true;
-    string movie_list = get_movie_list(*movie_layer_);
+    string movie_list = encode_movie_list_as_string(*movie_list_);
     protocol::message_type msg_type = protocol::GIVE_MOVIE_LIST;
 
     message_.get_header().set_msg_type(msg_type);
@@ -157,7 +157,7 @@ bool Connection::handle_get_movie() {
     std::string movie_name = std::string(message_.body().get(), message_.get_header().get_body_len());
 
     try {
-        streamed_movie_ = make_unique<Movie>(movie_layer_->find_movie_location(movie_name));
+        streamed_movie_ = make_unique<Movie>(movie_list_->get_movie_location(movie_name));
     } catch (std::exception& err) {
         std::cerr << "Error in Connection::handle_get_movie during get_movie_location. Client requested nonexisting movie";
         return false;

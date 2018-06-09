@@ -2,7 +2,7 @@
 
 #include <boost/asio.hpp>
 #include <QObject>
-#include "MovieLayer.hpp"
+#include "MovieList.hpp"
 #include "protocol/Msg.hpp"
 
 using namespace boost::asio::ip;
@@ -10,7 +10,7 @@ using namespace boost::asio::ip;
 class Connection : public QObject {
     Q_OBJECT
 public:
-    Connection(boost::asio::io_context&, unique_ptr<MovieLayer>&);
+    Connection(boost::asio::io_context&, unique_ptr<MovieList>&);
 
     tcp::socket& get_tcp_socket();
     udp::socket& get_udp_socket();
@@ -54,7 +54,7 @@ private:
     void prepare_header(protocol::message_type, unsigned, unsigned, unsigned, unsigned, unsigned, bool);
 
     protocol::Msg message_;
-    unique_ptr<MovieLayer>& movie_layer_;
+    unique_ptr<MovieList>& movie_list_;
     tcp::socket tcp_socket_;
     udp::socket udp_socket_;
     unique_ptr<Movie> streamed_movie_;

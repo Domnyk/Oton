@@ -11,16 +11,16 @@ using namespace std;
  *  There can't be two films with the same filename but in diffrent locations
  *  See method "is_movie_loaded"
  */
-class MovieLayer
+class MovieList
 {
 public:
-    MovieLayer();
+    MovieList();
 
     bool add_movie(const string&);
     void delete_movie(const string&);
 
     std::string get_movie_location(const string&) const;
-    string friend get_movie_list(const MovieLayer&);
+    string friend encode_movie_list_as_string(const MovieList&);
 private:
     list<string>::const_iterator find_movie_location(const string&) const;
 

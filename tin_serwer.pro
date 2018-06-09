@@ -29,7 +29,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += \
-    tests/test_example.cpp \
     src/main.cpp \
     src/gui/mainwindow.cpp \
     src/server/Server.cpp \
@@ -40,15 +39,11 @@ SOURCES += \
     src/network/protocol/Header.cpp \
     src/network/Acceptor.cpp \
     src/network/Connection.cpp \
-    tests/FrameTest.cpp \
     src/network/protocol/Msg.cpp \
-    tests/MsgTest.cpp \
-    tests/MovieLayerTest.cpp \
-    src/server/MovieLayer.cpp \
-    src/server/NetworkLayer.cpp
+    src/server/NetworkLayer.cpp \
+    src/server/MovieList.cpp
 
 HEADERS += \
-    tests/test_example.h \
     src/gui/mainwindow.h \
     src/server/Server.hpp \
     src/movie/AudioStream.hpp \
@@ -61,13 +56,9 @@ HEADERS += \
     src/network/protocol/Constants.hpp \
     src/network/Acceptor.hpp \
     src/network/Connection.hpp \
-    tests/FrameTest.hpp \
     src/network/protocol/Msg.hpp \
-    tests/MsgTest.hpp \
-    tests/MovieTest.hpp \
-    tests/MovieLayerTest.hpp \
-    src/server/MovieLayer.hpp \
-    src/server/NetworkLayer.hpp
+    src/server/NetworkLayer.hpp \
+    src/server/MovieList.hpp
 
 test {
     message(Test build)
@@ -76,30 +67,28 @@ test {
         tests/tests_main.cpp \
         tests/FrameTest.cpp \
         tests/HeaderTest.cpp \
-        tests/MovieLayerTest.cpp \
         tests/MsgTest.cpp \
         tests/MovieTest.cpp \
         src/movie/Frame.cpp \
         src/network/protocol/Header.cpp \
-        src/server/MovieLayer.cpp \
         src/network/protocol/Msg.cpp \
         src/movie/Movie.cpp \
         src/movie/AudioStream.cpp \
-        src/movie/VideoStream.cpp
+        src/movie/VideoStream.cpp \
+        tests/MovieListTest.cpp
 
     HEADERS = \
         tests/FrameTest.hpp \
         tests/HeaderTest.hpp \
-        tests/MovieLayerTest.hpp \
         tests/MsgTest.hpp \
         tests/MovieTest.hpp \
         src/movie/Frame.hpp \
         src/network/protocol/Header.hpp \
-        src/server/MovieLayer.hpp \
         src/network/protocol/Msg.hpp \
         src/movie/Movie.hpp \
         src/movie/AudioStream.hpp \
-        src/movie/VideoStream.hpp
+        src/movie/VideoStream.hpp \
+        tests/MovieListTest.hpp
 } else {
     message(Standard build)
 }
@@ -161,7 +150,7 @@ macx{
         -ldl \
         -lm
 
-        INCLUDEPATH += "/usr/local/include"
+    INCLUDEPATH += "/usr/local/include"
 }
 
 FORMS += \

@@ -7,7 +7,7 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    server_(new MovieLayer())
+    server_(new MovieList())
 {
     ui->setupUi(this);
 }

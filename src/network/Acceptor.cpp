@@ -8,10 +8,10 @@
 const int ANY_PORT = 0;
 
 Acceptor::Acceptor(boost::asio::io_context& io_context,
-                   unique_ptr<MovieLayer>& movie_layer,
+                   unique_ptr<MovieList>& movie_list,
                    const unsigned short max_num_of_clients_)
     : tcp_acceptor_(io_context, tcp::endpoint(tcp::v4(), ANY_PORT)),
-      movie_layer_(movie_layer),
+      movie_list_(movie_list),
       max_num_of_clients_(max_num_of_clients_),
       curr_num_of_clients_(0) {
     tcp_start_accept();
@@ -22,7 +22,7 @@ unsigned short Acceptor::get_tcp_port() const {
 }
 
 void Acceptor::tcp_start_accept() {
-    auto connection_ptr = make_shared<Connection>(tcp_acceptor_.get_executor().context(), movie_layer_);
+    auto connection_ptr = make_shared<Connection>(tcp_acceptor_.get_executor().context(), movie_list_);
     QObject::connect(&(*connection_ptr), &Connection::user_connects, this, &Acceptor::user_connected);
     QObject::connect(&(*connection_ptr), &Connection::user_disconnects, this, &Acceptor::user_disconnected);
 
@@ -60,14 +60,6 @@ void Acceptor::tcp_handle_accept(shared_ptr<Connection> connection_ptr, const bo
         connection_ptr->start();
     });
     t.detach();
-
-    /*
-    std::thread t([=](){
-        handler->read();
-    });
-    t.detach();
-    new_client_handler_(handler->get_socket());
-    */
 
     // Continiue accepting over TCP
     this->tcp_start_accept();

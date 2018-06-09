@@ -3,12 +3,12 @@
 #include "../tests/HeaderTest.hpp"
 #include "../tests/FrameTest.hpp"
 #include "../tests/MsgTest.hpp"
-#include "../tests/MovieLayerTest.hpp"
+#include "../tests/MovieListTest.hpp"
 #include "../tests/MovieTest.hpp"
 
-int main(int argc, char *argv[])
+int main()
 {
-    MovieLayerTest movie_layer_test;    
+    MovieListTest movie_layer_test;
     HeaderTest header_test;
     MovieTest movie_test;
     FrameTest frame_test;

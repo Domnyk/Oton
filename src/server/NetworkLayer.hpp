@@ -7,14 +7,14 @@
 #include <thread>
 #include <QObject>
 #include "../network/Acceptor.hpp"
-#include "MovieLayer.hpp"
+#include "MovieList.hpp"
 
 class NetworkLayer : public QObject
 {
     Q_OBJECT
 
 public:
-    NetworkLayer(unique_ptr<MovieLayer>&,
+    NetworkLayer(unique_ptr<MovieList>&,
                   const unsigned short max_num_of_clients = NetworkLayer::DEFAULT_MAX_NUM_OF_CLIENTS,
                   const unsigned short threads_num  = NetworkLayer::DEFAULT_NUM_OF_THREAD_FOR_ASIO);
 
@@ -32,7 +32,7 @@ signals:
     void server_closes();
 private:
     const unsigned short threads_num_;
-    unique_ptr<MovieLayer>& movie_layer_;
+    unique_ptr<MovieList>& movie_layer_;
 
     boost::asio::io_context io_context;
     Acceptor acceptor_;
