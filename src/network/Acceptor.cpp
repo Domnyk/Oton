@@ -56,7 +56,6 @@ void Acceptor::tcp_handle_accept(shared_ptr<Connection> connection_ptr, const bo
     std::cerr << "Client accepted over TCP" << std::endl;
 
     std::thread t([connection_ptr](){
-        std::cerr << "Server works in TCP Only mode" << std::endl;
         connection_ptr->start();
     });
     t.detach();

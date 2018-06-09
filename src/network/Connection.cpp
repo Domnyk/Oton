@@ -8,8 +8,6 @@
 #include "../movie/Resolution.hpp"
 #include "protocol/Constants.hpp"
 
-const unsigned int MAX_DATAGRAM_SIZE = 1000;
-
 Connection::Connection(boost::asio::io_context& io_context, unique_ptr<MovieList>& movie_list)
     : movie_list_(movie_list), tcp_socket_(io_context), udp_socket_(io_context),
       streamed_movie_(nullptr) {
@@ -26,9 +24,7 @@ udp::socket& Connection::get_udp_socket() {
 }
 
 void Connection::start() {
-    std::cerr << "Connection::start() do nothing for now" << std::endl;
-
-    /* unsigned const short port_num_len = 5;
+    unsigned const short port_num_len = 5;
     boost::array<char, port_num_len> port_num_buf;
     try {
         boost::asio::read(tcp_socket_, boost::asio::buffer(port_num_buf, port_num_buf.size()));
@@ -55,8 +51,6 @@ void Connection::start() {
         std::cerr << "Error during Connection::start() when writing to tcp_socket: " << err.what() << ". Terminating" << std::endl;
         return;
     }
-
-    */
 
     id_string_ = tcp_socket_.remote_endpoint().address().to_string() + " " + std::to_string(tcp_socket_.remote_endpoint().port());
     emit user_connects(id_string_);
@@ -182,26 +176,20 @@ bool Connection::handle_get_frame() {
         send_frame(message_.get_header().get_frame_num());
     } catch (std::exception& err) {
         std::cerr << "Error during send_frame() in Connection::handle_get_frame(): " << err.what() << std::endl;
+        return false;
     }
 
     return true;
 }
 
 void Connection::send_msg_with_frame(const Frame& frame, protocol::message_type msg_type) {
-    /* try {
-        if (frame.is_key_frame()) {
+    if (frame.is_key_frame()) {
             std::cerr << "Send by TCP" << std::endl;
             send_with_confirmation(tcp_socket_, msg_type);
-        } else {
+    } else {
             std::cerr << "Send by UDP" << std::endl;
             send_with_confirmation(udp_socket_, msg_type);
-        }
-    } catch (std::exception& err) {
-        std::cerr << "Error during send_with_confirmation: " << err.what() << std::endl;
-    } */
-
-    std::cerr << "Fix Connection::send_msg_with_frame()" << std::endl;
-    send_with_confirmation(tcp_socket_, msg_type);
+    }
 }
 
 bool Connection::disconnect_client() {
@@ -270,15 +258,15 @@ void Connection::send_header() {
 }
 
 void Connection::send_body(udp::socket& udp_socket) {
-    unsigned num_of_full_packets = (message_.msg_len() - protocol::HEADER_LENGTH) / MAX_DATAGRAM_SIZE;
+    unsigned num_of_full_packets = (message_.msg_len() - protocol::HEADER_LENGTH) / protocol::MAX_DATAGRAM_SIZE;
 
     for (unsigned short i = 0; i < num_of_full_packets; ++i) {
-        udp_socket.send(boost::asio::buffer(message_.body().get() + MAX_DATAGRAM_SIZE * i, MAX_DATAGRAM_SIZE));
+        udp_socket.send(boost::asio::buffer(message_.body().get() + protocol::MAX_DATAGRAM_SIZE * i, protocol::MAX_DATAGRAM_SIZE));
     }
 
-    unsigned last_packet_num_of_bytes = (message_.msg_len() - protocol::HEADER_LENGTH) - (num_of_full_packets * MAX_DATAGRAM_SIZE);
+    unsigned last_packet_num_of_bytes = (message_.msg_len() - protocol::HEADER_LENGTH) - (num_of_full_packets * protocol::MAX_DATAGRAM_SIZE);
 
-    udp_socket.send(boost::asio::buffer(message_.body().get() + MAX_DATAGRAM_SIZE * (num_of_full_packets), last_packet_num_of_bytes) );
+    udp_socket.send(boost::asio::buffer(message_.body().get() + protocol::MAX_DATAGRAM_SIZE * (num_of_full_packets), last_packet_num_of_bytes) );
 }
 
 void Connection::send_body(tcp::socket& tcp_socket) {
