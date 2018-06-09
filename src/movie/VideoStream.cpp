@@ -4,20 +4,20 @@
 
 using namespace std;
 
-VideoStream::VideoStream(const string& fileName) : videoCapture_(), num_of_frames_(0) {
+VideoStream::VideoStream(const string& fileName) : video_capture_(), num_of_frames_(0) {
 	open(fileName);
 }
 
 void VideoStream::open(const string& fileName) {
 	try {
-		videoCapture_.open(fileName);
+        video_capture_.open(fileName);
 
-		if(!videoCapture_.isOpened()) {
+        if(!video_capture_.isOpened()) {
 			string errorMsg = "Could not open file: " + fileName;
 			throw runtime_error(errorMsg);
 		}
 
-		num_of_frames_ = videoCapture_.get(CAP_PROP_FRAME_COUNT);
+        num_of_frames_ = video_capture_.get(CAP_PROP_FRAME_COUNT);
 	} catch (std::exception& e) {
 		cerr << "An error occured during opening of the video stream: " << e.what() << endl;
 	}
@@ -34,7 +34,7 @@ Frame VideoStream::get_frame(unsigned frameNum) {
 
 
 	Mat frameData;
-	videoCapture_.set(CAP_PROP_POS_FRAMES, frameNum);
-	videoCapture_ >> frameData;
+    video_capture_.set(CAP_PROP_POS_FRAMES, frameNum);
+    video_capture_ >> frameData;
 	return Frame(frameNum, frameData);
 }
