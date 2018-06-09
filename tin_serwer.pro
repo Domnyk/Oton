@@ -37,7 +37,6 @@ SOURCES += \
     src/movie/Movie.cpp \
     src/movie/VideoStream.cpp \
     src/network/protocol/Header.cpp \
-    src/network/Acceptor.cpp \
     src/network/Connection.cpp \
     src/network/protocol/Msg.cpp \
     src/server/NetworkLayer.cpp \
@@ -54,7 +53,6 @@ HEADERS += \
     src/network/protocol/message_type.hpp \
     src/network/protocol/Header.hpp \
     src/network/protocol/Constants.hpp \
-    src/network/Acceptor.hpp \
     src/network/Connection.hpp \
     src/network/protocol/Msg.hpp \
     src/server/NetworkLayer.hpp \
