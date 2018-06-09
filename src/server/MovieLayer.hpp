@@ -1,7 +1,7 @@
 #ifndef MOVIE_LAYER_HPP
 #define MOVIE_LAYER_HPP
 
-#include <map>
+#include <list>
 #include <string>
 #include "Movie.hpp"
 
@@ -14,25 +14,17 @@ using namespace std;
 class MovieLayer
 {
 public:
-    /*
-     * Key - std::string - movie location
-     * Value - std::string - movie file name
-     */
-    typedef map<string, string> movies_location;
-
     MovieLayer();
 
-    std::pair<movies_location::iterator, bool> add_movie(const string&);
+    bool add_movie(const string&);
     void delete_movie(const string&);
+
     std::string get_movie_location(const string&) const;
-    static std::string get_movie_filename(const string&);
-
-    std::string friend get_movie_list(const MovieLayer&);
-
+    string friend get_movie_list(const MovieLayer&);
 private:
-    bool is_movie_loaded(const string&) const;
+    list<string>::const_iterator find_movie_location(const string&) const;
 
-    movies_location movies_location_;
+    list<string> movies_filepaths_;
 };
 
 #endif

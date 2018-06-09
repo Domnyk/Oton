@@ -5,6 +5,12 @@
 
 namespace protocol {
 /*
+ * This character is used to separate movies
+ * when sending GIVE MOVIE LIST body
+ */
+const char MOVIE_DELIMITER = '\n';
+
+/*
  *  Header length in bytes
  */
 const unsigned int HEADER_LENGTH = 35;

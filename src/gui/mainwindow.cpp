@@ -2,6 +2,7 @@
 #include <string>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "Movie.hpp"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -23,18 +24,15 @@ void MainWindow::on_edit_host_address_textChanged(const QString& /* arg1 */)
 
 void MainWindow::on_btn_choose_file_clicked(bool /* checked */)
 {
-    typedef std::map<string, string>::iterator iter;
+    string movie_filepath = QFileDialog::getOpenFileName(this, "Add movie", QString(), tr("Movies (*.avi *.mp4)")).toStdString();
+    bool is_movie_already_on_list = server_.get_movie_layer()->add_movie(movie_filepath);
 
-    string filePath = QFileDialog::getOpenFileName(this, "Add movie", QString(), tr("Movies (*.avi *.mp4)")).toStdString();
-    std::pair<iter, bool> movie_info = server_.get_movie_layer()->add_movie(filePath);
-
-    bool is_movie_already_on_list = !movie_info.second;
     if(is_movie_already_on_list) {
         ui->status_value_label->setText(QString::fromStdString("Movie already on list!"));
         return;
     }
 
-    std::string movie_filename = movie_info.first->first;
+    std::string movie_filename = Movie::get_filename(movie_filepath);
     ui->list_movies->addItem(QString::fromStdString(movie_filename));
     ui->status_value_label->setText(QString::fromStdString("Movie added"));
 }

@@ -157,7 +157,7 @@ bool Connection::handle_get_movie() {
     std::string movie_name = std::string(message_.body().get(), message_.get_header().get_body_len());
 
     try {
-        streamed_movie_ = make_unique<Movie>(movie_layer_->get_movie_location(movie_name));
+        streamed_movie_ = make_unique<Movie>(movie_layer_->find_movie_location(movie_name));
     } catch (std::exception& err) {
         std::cerr << "Error in Connection::handle_get_movie during get_movie_location. Client requested nonexisting movie";
         return false;

@@ -1,44 +1,58 @@
 #include <iostream>
+#include <algorithm>
 #include "MovieLayer.hpp"
+#include "../network/protocol/Constants.hpp"
 
-MovieLayer::MovieLayer() : movies_location_() {}
+MovieLayer::MovieLayer() : movies_filepaths_() {}
 
-std::pair<MovieLayer::movies_location::iterator, bool>  MovieLayer::add_movie(const string& movie_path) {
-    string movie_filename = get_movie_filename(movie_path);
-    return movies_location_.emplace(movie_filename, movie_path);
+bool MovieLayer::add_movie(const string& movie_path) {
+    bool is_already_on_list =
+            find(movies_filepaths_.begin(), movies_filepaths_.end(), movie_path) != movies_filepaths_.end();
+
+    if (is_already_on_list) {
+        return false;
+    }
+
+    movies_filepaths_.push_back(movie_path);
+    return true;
 }
 
 void MovieLayer::delete_movie(const string& movie_filename) {
-    movies_location_.erase(movie_filename);
-}
+    auto element_to_delelete = find_movie_location(movie_filename);
 
-bool MovieLayer::is_movie_loaded(const string& movie_filename) const {
-    auto it = movies_location_.find(movie_filename);
-    return !(it == movies_location_.end());
-}
-
-string MovieLayer::get_movie_filename(const string& movie_path) {
-    // Based on: http://www.cplusplus.com/reference/string/string/find_last_of/
-    size_t found = movie_path.find_last_of("/\\");
-    string movie_filename = movie_path.substr(found + 1);
-
-    return movie_filename;
-}
-
-string MovieLayer::get_movie_location(const string& movie_filename) const {
-    if(!is_movie_loaded(movie_filename)) {
-        throw std::runtime_error("No such movie in library");
+    if(element_to_delelete == movies_filepaths_.end()) {
+        return;
     }
 
-    return movies_location_.find(movie_filename)->second;
+    movies_filepaths_.erase(element_to_delelete);
 }
 
+list<string>::const_iterator MovieLayer::find_movie_location(const string& movie_filename) const {
+    return find_if(movies_filepaths_.begin(), movies_filepaths_.end(), [&](const string& movie_location){
+                    return movie_location.find(movie_filename) != string::npos;
+           });
+}
+
+std::string MovieLayer::get_movie_location(const string& movie_filename) const {
+    auto element_to_return = find_movie_location(movie_filename);
+
+    if(element_to_return == movies_filepaths_.end()) {
+        throw runtime_error("No such element on list");
+    }
+
+    return *element_to_return;
+}
+
+/*
+ * Convienience method used to provide properly formated string
+ * to be send over network
+ */
 std::string get_movie_list(const MovieLayer& movie_layer) {
     string movie_list;
 
-    for(auto& elem: movie_layer.movies_location_) {
-        movie_list += elem.first;
-        movie_list += '\n';
+    for(auto& movie_filepath: movie_layer.movies_filepaths_) {
+        movie_list += Movie::get_filename(movie_filepath);
+        movie_list += protocol::MOVIE_DELIMITER;
     }
 
     return movie_list;

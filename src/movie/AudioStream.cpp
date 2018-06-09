@@ -82,7 +82,7 @@ void AudioStream::read_packets_from_file(AVFormatContext* ctx) {
     AVPacket av_packet;
     av_init_packet(&av_packet);
 
-    bool is_data_to_read = av_read_frame(ctx ,&av_packet);
+    int is_data_to_read = av_read_frame(ctx ,&av_packet);
     while (is_data_to_read >= 0) {
         packets_.push_back(av_packet);
     }

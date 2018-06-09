@@ -9,6 +9,8 @@ using namespace std;
 
 class Movie {
 public:
+    static std::string get_filename(const std::string&);
+
 	Movie(const std::string&);
 
     VideoStream& videoStream() {

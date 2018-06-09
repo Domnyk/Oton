@@ -64,6 +64,7 @@ HEADERS += \
     tests/FrameTest.hpp \
     src/network/protocol/Msg.hpp \
     tests/MsgTest.hpp \
+    tests/MovieTest.hpp \
     tests/MovieLayerTest.hpp \
     src/server/MovieLayer.hpp \
     src/server/NetworkLayer.hpp
@@ -71,11 +72,34 @@ HEADERS += \
 test {
     message(Test build)
 
-    SOURCES -= src/main.cpp
-    SOURCES += tests/tests_main.cpp \
-            tests/HeaderTest.cpp \
+    SOURCES = \
+        tests/tests_main.cpp \
+        tests/FrameTest.cpp \
+        tests/HeaderTest.cpp \
+        tests/MovieLayerTest.cpp \
+        tests/MsgTest.cpp \
+        tests/MovieTest.cpp \
+        src/movie/Frame.cpp \
+        src/network/protocol/Header.cpp \
+        src/server/MovieLayer.cpp \
+        src/network/protocol/Msg.cpp \
+        src/movie/Movie.cpp \
+        src/movie/AudioStream.cpp \
+        src/movie/VideoStream.cpp
 
-    HEADERS += tests/HeaderTest.hpp \
+    HEADERS = \
+        tests/FrameTest.hpp \
+        tests/HeaderTest.hpp \
+        tests/MovieLayerTest.hpp \
+        tests/MsgTest.hpp \
+        tests/MovieTest.hpp \
+        src/movie/Frame.hpp \
+        src/network/protocol/Header.hpp \
+        src/server/MovieLayer.hpp \
+        src/network/protocol/Msg.hpp \
+        src/movie/Movie.hpp \
+        src/movie/AudioStream.hpp \
+        src/movie/VideoStream.hpp
 } else {
     message(Standard build)
 }
