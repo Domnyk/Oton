@@ -27,6 +27,10 @@ void MovieList::delete_movie(const string& movie_filename) {
     movies_filepaths_.erase(element_to_delelete);
 }
 
+unsigned MovieList::get_num_of_movies() const {
+    return movies_filepaths_.size();
+}
+
 list<string>::const_iterator MovieList::find_movie_location(const string& movie_filename) const {
     return find_if(movies_filepaths_.begin(), movies_filepaths_.end(), [&](const string& movie_location){
                     return movie_location.find(movie_filename) != string::npos;

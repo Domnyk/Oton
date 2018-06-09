@@ -10,6 +10,7 @@ MainWindow::MainWindow(QWidget *parent) :
     server_(new MovieList())
 {
     ui->setupUi(this);
+    ui->edit_max_num_of_clients->setValidator(new QIntValidator(0, 100, this));
 }
 
 MainWindow::~MainWindow()
@@ -25,11 +26,19 @@ void MainWindow::on_edit_host_address_textChanged(const QString& /* arg1 */)
 void MainWindow::on_btn_choose_file_clicked(bool /* checked */)
 {
     string movie_filepath = QFileDialog::getOpenFileName(this, "Add movie", QString(), tr("Movies (*.avi *.mp4)")).toStdString();
-    bool movie_added = server_.get_movie_layer()->add_movie(movie_filepath);
+    if (movie_filepath.empty()) {
+        return;
+    }
 
+    bool movie_added = server_.get_movie_layer()->add_movie(movie_filepath);
     if(!movie_added) {
         ui->status_value_label->setText(QString::fromStdString("Movie already on list!"));
         return;
+    }
+
+    const unsigned num_of_movies = server_.get_movie_layer()->get_num_of_movies();
+    if (num_of_movies == 1) {
+        ui->btn_delete_movie->setEnabled(true);
     }
 
     std::string movie_filename = Movie::get_filename(movie_filepath);
@@ -72,6 +81,11 @@ void MainWindow::on_btn_delete_movie_clicked()
     }
 
     qDeleteAll(selectedItems);
+
+    const unsigned num_of_movies = server_.get_movie_layer()->get_num_of_movies();
+    if (num_of_movies == 0) {
+        ui->btn_delete_movie->setEnabled(false);
+    }
 }
 
 void MainWindow::user_connected(const std::string& ip_with_tcp_port) {

@@ -18,6 +18,7 @@ public:
 
     bool add_movie(const string&);
     void delete_movie(const string&);
+    unsigned get_num_of_movies() const;
 
     std::string get_movie_location(const string&) const;
     string friend encode_movie_list_as_string(const MovieList&);
