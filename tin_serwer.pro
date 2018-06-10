@@ -40,7 +40,8 @@ SOURCES += \
     src/network/Connection.cpp \
     src/network/protocol/Msg.cpp \
     src/server/NetworkLayer.cpp \
-    src/server/MovieList.cpp
+    src/server/MovieList.cpp \
+    src/controller/RootController.cpp
 
 HEADERS += \
     src/gui/mainwindow.h \
@@ -56,7 +57,8 @@ HEADERS += \
     src/network/Connection.hpp \
     src/network/protocol/Msg.hpp \
     src/server/NetworkLayer.hpp \
-    src/server/MovieList.hpp
+    src/server/MovieList.hpp \
+    src/controller/RootController.hpp
 
 test {
     message(Test build)

@@ -6,8 +6,8 @@
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow),
-    server_(new MovieList())
+    ui(new Ui::MainWindow)
+    // server_(new MovieList())
 {
     ui->setupUi(this);
     ui->edit_max_num_of_clients->setValidator(new QIntValidator(0, 100, this));
@@ -23,34 +23,34 @@ void MainWindow::on_edit_host_address_textChanged(const QString& /* arg1 */)
 
 }
 
+void MainWindow::handle_movie_already_on_list() {
+    ui->status_value_label->setText(QString::fromStdString("Movie already on list!"));
+}
+
+void MainWindow::handle_first_movie_added(const QString movie_name) {
+    ui->btn_delete_movie->setEnabled(true);
+    handle_movie_added(movie_name);
+}
+
+void MainWindow::handle_movie_added(const QString movie_name) {
+    ui->list_movies->addItem(movie_name);
+    ui->status_value_label->setText(QString::fromStdString("Movie added"));
+}
+
 void MainWindow::on_btn_choose_file_clicked(bool /* checked */)
 {
-    string movie_filepath = QFileDialog::getOpenFileName(this, "Add movie", QString(), tr("Movies (*.avi *.mp4)")).toStdString();
-    if (movie_filepath.empty()) {
+    QString movie_filepath = QFileDialog::getOpenFileName(this, "Add movie", QString(), tr("Movies (*.avi *.mp4)"));
+    if (movie_filepath.isEmpty()) {
+        ui->status_value_label->setText("Waiting for action");
         return;
     }
 
-    bool movie_added = server_.get_movie_layer()->add_movie(movie_filepath);
-    if(!movie_added) {
-        ui->status_value_label->setText(QString::fromStdString("Movie already on list!"));
-        return;
-    }
-
-    const unsigned num_of_movies = server_.get_movie_layer()->get_num_of_movies();
-    if (num_of_movies == 1) {
-        ui->btn_delete_movie->setEnabled(true);
-    }
-
-    std::string movie_filename = Movie::get_filename(movie_filepath);
-    ui->list_movies->addItem(QString::fromStdString(movie_filename));
-    ui->status_value_label->setText(QString::fromStdString("Movie added"));
+    emit file_has_been_choosed(movie_filepath);
 }
 
 void MainWindow::on_btn_close_server_clicked()
 {
-    emit server_closes();
-
-    server_.get_network_layer().reset(nullptr);
+    emit stop_distributing();
 
     ui->btn_choose_file->setEnabled(true);
     ui->btn_delete_movie->setEnabled(true);
@@ -72,20 +72,17 @@ void MainWindow::on_btn_choose_file_clicked()
 void MainWindow::on_btn_delete_movie_clicked()
 {
     QList<QListWidgetItem*> selectedItems = ui->list_movies->selectedItems();
-
     for(int i = 0; i < selectedItems.size(); ++i) {
         QString movie_name = selectedItems[i]->text();
 
-        server_.get_movie_layer()->delete_movie(movie_name.toStdString());
+        emit delete_has_been_clicked(movie_name);
         ui->status_value_label->setText(QString::fromStdString("Movie deleted"));
     }
-
     qDeleteAll(selectedItems);
+}
 
-    const unsigned num_of_movies = server_.get_movie_layer()->get_num_of_movies();
-    if (num_of_movies == 0) {
-        ui->btn_delete_movie->setEnabled(false);
-    }
+void MainWindow::handle_last_movie_deleted() {
+    ui->btn_delete_movie->setEnabled(false);
 }
 
 void MainWindow::user_connected(const std::string& ip_with_tcp_port) {
@@ -119,21 +116,25 @@ void MainWindow::on_btn_open_server_clicked()
     } catch (std::exception& err) {
         std::cerr << "Error during 'max number of clients' field conversion" << std::endl;
     }
-    server_.init_network_layer(max_num_of_clients);
+    emit start_distributing(max_num_of_clients);
+
     ui->edit_max_num_of_clients->setText(QString::fromStdString(std::to_string(max_num_of_clients)));
 
-    qRegisterMetaType<std::string>("std::string");
+
 
     /*
      * Connect network_layer to peer list
      */
-    QObject::connect(&(*server_.get_network_layer()), &NetworkLayer::user_connects,
+    /* QObject::connect(&(*server_.get_network_layer()), &NetworkLayer::user_connects,
                      this, &MainWindow::user_connected);
     QObject::connect(&(*server_.get_network_layer()), &NetworkLayer::user_disconnects,
                      this, &MainWindow::user_disconnected);
 
     QObject::connect(this, &MainWindow::server_closes, &(*server_.get_network_layer()), &NetworkLayer::server_closes);
 
-    unsigned short tcp_port = server_.get_tcp_port();
-    ui->tcp_port->setText(QString::fromStdString(to_string(tcp_port)));
+    ui->tcp_port->setText(QString::fromStdString(to_string(tcp_port))); */
+}
+
+void MainWindow::handle_server_distributes(unsigned short port_num) {
+    ui->tcp_port->setText(QString::number(port_num));
 }

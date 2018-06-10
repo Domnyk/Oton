@@ -8,11 +8,11 @@
 #include "../movie/Resolution.hpp"
 #include "protocol/Constants.hpp"
 
-Connection::Connection(boost::asio::io_context& io_context, unique_ptr<MovieList>& movie_list)
+Connection::Connection(boost::asio::io_context& io_context, MovieList& movie_list)
     : movie_list_(movie_list), tcp_socket_(io_context), udp_socket_(io_context),
       streamed_movie_(nullptr) {
 
-    QObject::connect(this, &Connection::server_closes, this, &Connection::server_close_btn_clicked);
+    // QObject::connect(this, &Connection::server_closes, this, &Connection::server_close_btn_clicked);
 }
 
 tcp::socket& Connection::get_tcp_socket() {
@@ -113,7 +113,7 @@ bool Connection::handle_received_msg(protocol::message_type msg_type) {
 
 bool Connection::handle_get_movie_list() {
     bool is_client_ok = true;
-    string movie_list = encode_movie_list_as_string(*movie_list_);
+    string movie_list = encode_movie_list_as_string(movie_list_);
     protocol::message_type msg_type = protocol::GIVE_MOVIE_LIST;
 
     message_.get_header().set_msg_type(msg_type);
@@ -151,7 +151,7 @@ bool Connection::handle_get_movie() {
     std::string movie_name = std::string(message_.body().get(), message_.get_header().get_body_len());
 
     try {
-        streamed_movie_ = make_unique<Movie>(movie_list_->get_movie_location(movie_name));
+        streamed_movie_ = make_unique<Movie>(movie_list_.get_movie_location(movie_name));
     } catch (std::exception& err) {
         std::cerr << "Error in Connection::handle_get_movie during get_movie_location. Client requested nonexisting movie";
         return false;

@@ -26,7 +26,7 @@ public:
         return network_layer_->get_tcp_port();
     }
 
-    void init_network_layer(const unsigned short);
+    // void init_network_layer(const unsigned short);
 private:
     unique_ptr<NetworkLayer> network_layer_;
     unique_ptr<MovieList> movie_list_;

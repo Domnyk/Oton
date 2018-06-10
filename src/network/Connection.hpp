@@ -10,7 +10,7 @@ using namespace boost::asio::ip;
 class Connection : public QObject {
     Q_OBJECT
 public:
-    Connection(boost::asio::io_context&, unique_ptr<MovieList>&);
+    Connection(boost::asio::io_context&, MovieList&);
 
     tcp::socket& get_tcp_socket();
     udp::socket& get_udp_socket();
@@ -20,7 +20,7 @@ signals:
     void user_connects(const std::string&);
     void user_disconnects(const std::string&);
 
-    void server_closes();
+    // void server_closes();
 public slots:
     void server_close_btn_clicked();
 private:
@@ -54,7 +54,7 @@ private:
     void prepare_header(protocol::message_type, unsigned, unsigned, unsigned, unsigned, unsigned, bool);
 
     protocol::Msg message_;
-    unique_ptr<MovieList>& movie_list_;
+    MovieList& movie_list_;
     tcp::socket tcp_socket_;
     udp::socket udp_socket_;
     unique_ptr<Movie> streamed_movie_;
