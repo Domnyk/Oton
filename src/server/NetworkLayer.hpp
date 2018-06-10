@@ -61,6 +61,8 @@ private:
 
     tcp::acceptor tcp_acceptor_;
 
+    boost::asio::executor_work_guard<boost::asio::io_context::executor_type> work_guard_;
+
     unsigned short max_num_of_clients_ = 1;
     unsigned short curr_num_of_clients_ = 0;
 };

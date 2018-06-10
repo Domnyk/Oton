@@ -11,7 +11,7 @@ const unsigned short ANY_PORT = 0;
 NetworkLayer::NetworkLayer(MovieList& movie_list, const unsigned short max_num_of_clients,
                            const unsigned short threads_num) :
     threads_num_(threads_num), movie_list_(movie_list), io_context(),
-    tcp_acceptor_(io_context), threads(), max_num_of_clients_(max_num_of_clients) {
+    tcp_acceptor_(io_context), threads(), work_guard_(boost::asio::make_work_guard(io_context)) ,max_num_of_clients_(max_num_of_clients) {
 }
 
 void NetworkLayer::handle_start_distributing(unsigned short max_num_of_clients) {
@@ -32,7 +32,7 @@ void NetworkLayer::start_tcp_accept() {
     // Signal chaining
     QObject::connect(&(*connection_ptr), &Connection::user_connects, this, &NetworkLayer::user_connects);
     QObject::connect(&(*connection_ptr), &Connection::user_disconnects, this, &NetworkLayer::user_disconnects);
-    // QObject::connect(this, &NetworkLayer::server_closes, &(*connection_ptr), &Connection::server_closes);
+    QObject::connect(this, &NetworkLayer::server_closes, &(*connection_ptr), &Connection::server_close_btn_clicked);
 
     std::cerr << "Is acceptor open: " << tcp_acceptor_.is_open() << std::endl;
 
@@ -79,6 +79,8 @@ void NetworkLayer::handle_stop_distributing() {
         std::cerr << "Error during acceptor close: " << err.what() << std::endl;
     }
 
+    emit server_closes();
+
     stop_ioc_threads();
 }
 
@@ -95,7 +97,7 @@ void NetworkLayer::user_connected() {
 }
 
 NetworkLayer::~NetworkLayer() {
-    // io_context.stop();
+    io_context.stop();
 }
 
 void NetworkLayer::open_acceptor() {
@@ -126,9 +128,12 @@ void NetworkLayer::start_ioc_threads() {
  }
 
 void NetworkLayer::stop_ioc_threads() {
+    io_context.stop();
+    io_context.restart();
+
     for(auto& thread: threads) {
         thread.~thread();
     }
-
     threads.clear();
+
 }

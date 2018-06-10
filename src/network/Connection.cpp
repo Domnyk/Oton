@@ -11,16 +11,10 @@
 Connection::Connection(boost::asio::io_context& io_context, MovieList& movie_list)
     : movie_list_(movie_list), tcp_socket_(io_context), udp_socket_(io_context),
       streamed_movie_(nullptr) {
-
-    // QObject::connect(this, &Connection::server_closes, this, &Connection::server_close_btn_clicked);
 }
 
 tcp::socket& Connection::get_tcp_socket() {
     return tcp_socket_;
-}
-
-udp::socket& Connection::get_udp_socket() {
-    return udp_socket_;
 }
 
 void Connection::start() {
@@ -113,13 +107,13 @@ bool Connection::handle_received_msg(protocol::message_type msg_type) {
 
 bool Connection::handle_get_movie_list() {
     bool is_client_ok = true;
-    string movie_list = encode_movie_list_as_string(movie_list_);
+    string body = encode_movie_list_as_string(movie_list_);
     protocol::message_type msg_type = protocol::GIVE_MOVIE_LIST;
 
     message_.get_header().set_msg_type(msg_type);
-    message_.get_header().set_body_len(movie_list.size());
+    message_.get_header().set_body_len(body.size());
     message_.set_header(message_.get_header().encode());
-    message_.set_body(movie_list);
+    message_.set_body(body);
 
     try {
         send_with_confirmation(tcp_socket_, msg_type);
@@ -242,8 +236,8 @@ bool Connection::is_confirmation_correct(protocol::message_type msg_type, protoc
     return msg_type == confirmation;
 }
 
-unsigned int Connection::read_header() {
-    return boost::asio::read(tcp_socket_, boost::asio::buffer(message_.data().get(), protocol::HEADER_LENGTH));
+void Connection::read_header() {
+    boost::asio::read(tcp_socket_, boost::asio::buffer(message_.data().get(), protocol::HEADER_LENGTH));
 }
 
 void Connection::read_body() {
@@ -309,6 +303,8 @@ void Connection::read_with_confirmation() {
 }
 
 void Connection::server_close_btn_clicked() {
+    std::cerr << "Closing sockets" << std::endl;
+
     if(tcp_socket_.is_open()) {
         tcp_socket_.close();
     }

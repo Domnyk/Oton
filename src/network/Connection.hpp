@@ -13,14 +13,11 @@ public:
     Connection(boost::asio::io_context&, MovieList&);
 
     tcp::socket& get_tcp_socket();
-    udp::socket& get_udp_socket();
 
     void start();
 signals:
     void user_connects(const std::string&);
     void user_disconnects(const std::string&);
-
-    // void server_closes();
 public slots:
     void server_close_btn_clicked();
 private:
@@ -34,7 +31,7 @@ private:
     bool handle_movie_finished();
     bool disconnect_client();
 
-    unsigned int read_header();
+    void read_header();
     void read_body();
     void read_with_confirmation();
     protocol::message_type read_confirmation();
