@@ -33,8 +33,18 @@ protocol::message_type Reader::read_confirmation() {
     return static_cast<protocol::message_type>(confirmation_num);
 }
 
+
+/*
+ * This method is here for simplicity
+ */
 void Reader::send_confirmation(protocol::message_type msg_type) {
-    std::string confirmation = "0" + std::to_string(msg_type);
+    std::string confirmation;
+    if (msg_type > 9) {
+        confirmation = std::to_string(msg_type);
+    } else {
+        confirmation = "0" + std::to_string(msg_type);
+    }
+
     boost::asio::write(tcp_socket_, boost::asio::buffer(confirmation.c_str(), protocol::FieldLength::msg_type));
 }
 

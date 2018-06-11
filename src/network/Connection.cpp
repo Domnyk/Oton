@@ -10,7 +10,8 @@
 
 Connection::Connection(boost::asio::io_context& io_context, MovieList& movie_list)
     : msg_(), movie_list_(movie_list), tcp_socket_(io_context), udp_socket_(io_context),
-      streamed_movie_(nullptr), reader_(tcp_socket_, msg_.data()) {
+      streamed_movie_(nullptr), reader_(tcp_socket_, msg_.data()),
+      sender_(tcp_socket_, udp_socket_, msg_.data())  {
 }
 
 tcp::socket& Connection::get_tcp_socket() {
@@ -116,7 +117,7 @@ bool Connection::handle_get_movie_list() {
     msg_.set_body(body);
 
     try {
-        send_with_confirmation(tcp_socket_, msg_type);
+        sender_.send_with_confirmation_tcp(msg_.get_header().get_body_len(), msg_type);
     } catch (std::exception& err) {
         std::cerr << "Error during send_with_confirmation in handle_get_movie_list: " << err.what() << std::endl;
         is_client_ok = false;
@@ -181,10 +182,10 @@ bool Connection::handle_get_frame() {
 void Connection::send_msg_with_frame(const Frame& frame, protocol::message_type msg_type) {
     if (frame.is_key_frame()) {
             std::cerr << "Send by TCP" << std::endl;
-            send_with_confirmation(tcp_socket_, msg_type);
+            sender_.send_with_confirmation_tcp(msg_.get_header().get_body_len(), msg_type);
     } else {
             std::cerr << "Send by UDP" << std::endl;
-            send_with_confirmation(udp_socket_, msg_type);
+            sender_.send_with_confirmation_udp(msg_.get_header().get_body_len(), msg_type);
     }
 }
 
@@ -216,59 +217,8 @@ bool Connection::handle_movie_finished() {
     return true;
 }
 
-void Connection::send_confirmation(protocol::message_type msg_type) {
-    std::string confirmation = "0" + to_string(msg_type);
-    boost::asio::write(tcp_socket_, boost::asio::buffer(confirmation.c_str(), protocol::FieldLength::msg_type));
-}
-
 bool Connection::is_confirmation_correct(protocol::message_type msg_type, protocol::message_type confirmation) {
     return msg_type == confirmation;
-}
-
-
-void Connection::send_header() {
-    std::string header(msg_.data().get(), protocol::HEADER_LENGTH);
-    std::cerr << "Header to send: " << header << std::endl;
-
-    boost::asio::write(tcp_socket_, boost::asio::buffer(msg_.data().get(), protocol::HEADER_LENGTH));
-}
-
-void Connection::send_body(udp::socket& udp_socket) {
-    unsigned num_of_full_packets = (msg_.msg_len() - protocol::HEADER_LENGTH) / protocol::MAX_DATAGRAM_SIZE;
-
-    for (unsigned short i = 0; i < num_of_full_packets; ++i) {
-        udp_socket.send(boost::asio::buffer(msg_.body().get() + protocol::MAX_DATAGRAM_SIZE * i, protocol::MAX_DATAGRAM_SIZE));
-    }
-
-    unsigned last_packet_num_of_bytes = (msg_.msg_len() - protocol::HEADER_LENGTH) - (num_of_full_packets * protocol::MAX_DATAGRAM_SIZE);
-
-    udp_socket.send(boost::asio::buffer(msg_.body().get() + protocol::MAX_DATAGRAM_SIZE * (num_of_full_packets), last_packet_num_of_bytes) );
-}
-
-void Connection::send_body(tcp::socket& tcp_socket) {
-    boost::asio::write(tcp_socket, boost::asio::buffer(msg_.data().get() + protocol::HEADER_LENGTH, msg_.msg_len() - protocol::HEADER_LENGTH));
-}
-
-void Connection::send_with_confirmation(tcp::socket& tcp_socket, protocol::message_type expected_confirmation) {
-    send_header();
-
-    protocol::message_type confirmation = reader_.read_confirmation();
-    if(!is_confirmation_correct(expected_confirmation, confirmation)) {
-        throw std::runtime_error("Wrong confirmation number");
-    }
-
-    send_body(tcp_socket);
-}
-
-void Connection::send_with_confirmation(udp::socket& udp_socket, protocol::message_type expected_confirmation) {
-    send_header();
-
-    protocol::message_type confirmation = reader_.read_confirmation();
-    if(!is_confirmation_correct(expected_confirmation, confirmation)) {
-        throw std::runtime_error("Wrong confirmation number");
-    }
-
-    send_body(udp_socket);
 }
 
 void Connection::server_close_btn_clicked() {

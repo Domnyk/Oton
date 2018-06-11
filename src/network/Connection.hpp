@@ -5,6 +5,7 @@
 #include "MovieList.hpp"
 #include "protocol/Msg.hpp"
 #include "Reader.hpp"
+#include "Sender.hpp"
 
 using namespace boost::asio::ip;
 
@@ -33,12 +34,12 @@ private:
     bool disconnect_client();
 
     void send_msg_with_frame(const Frame&, protocol::message_type);
-    void send_header();
-    void send_body(tcp::socket&);
-    void send_body(udp::socket&);
-    void send_confirmation(protocol::message_type);
-    void send_with_confirmation(tcp::socket&, protocol::message_type);
-    void send_with_confirmation(udp::socket&, protocol::message_type);
+    // void send_header();
+    // void send_body(tcp::socket&);
+    // void send_body(udp::socket&);
+    // void send_confirmation(protocol::message_type);
+    // void send_with_confirmation(tcp::socket&, protocol::message_type);
+    // void send_with_confirmation(udp::socket&, protocol::message_type);
 
     void send_frame(unsigned int);
 
@@ -53,4 +54,5 @@ private:
     unique_ptr<Movie> streamed_movie_;
     string id_string_;
     Reader reader_;
+    Sender sender_;
 };
