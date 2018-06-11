@@ -11,10 +11,30 @@ using namespace std;
 Header::Header() {
 }
 
+Header::Header(const char* data) {
+    parse(data);
+}
+
 Header::Header(message_type message_type, unsigned int body_len) : msg_type_(message_type),
                                                                                body_len_(body_len) {
     std::cerr << "Fix Header::Header(char*, message_type, unsigned int)" << std::endl;
     encode();
+}
+
+Header& Header::operator=(const Header& other) {
+    if (this == &other) {
+        return *this;
+    }
+
+    msg_type_ = other.get_msg_type();
+    body_len_ = other.get_body_len();
+    num_of_cols_ = other.get_num_of_cols();
+    num_of_rows_ = other.get_num_of_rows();
+    num_of_frames_ = other.get_num_of_frames();
+    frame_num_ = other.get_frame_num();
+    is_key_frame_ = other.get_is_key_frame();
+
+    return *this;
 }
 
 unsigned int Header::parse_field(unsigned short field_length, unsigned short field_offset, const std::string& str_data) const {

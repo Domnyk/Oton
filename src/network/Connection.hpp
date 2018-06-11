@@ -4,6 +4,7 @@
 #include <QObject>
 #include "MovieList.hpp"
 #include "protocol/Msg.hpp"
+#include "Reader.hpp"
 
 using namespace boost::asio::ip;
 
@@ -31,11 +32,6 @@ private:
     bool handle_movie_finished();
     bool disconnect_client();
 
-    void read_header();
-    void read_body();
-    void read_with_confirmation();
-    protocol::message_type read_confirmation();
-
     void send_msg_with_frame(const Frame&, protocol::message_type);
     void send_header();
     void send_body(tcp::socket&);
@@ -50,10 +46,11 @@ private:
 
     void prepare_header(protocol::message_type, unsigned, unsigned, unsigned, unsigned, unsigned, bool);
 
-    protocol::Msg message_;
+    protocol::Msg msg_;
     MovieList& movie_list_;
     tcp::socket tcp_socket_;
     udp::socket udp_socket_;
     unique_ptr<Movie> streamed_movie_;
     string id_string_;
+    Reader reader_;
 };

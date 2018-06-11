@@ -9,8 +9,8 @@
 #include "protocol/Constants.hpp"
 
 Connection::Connection(boost::asio::io_context& io_context, MovieList& movie_list)
-    : movie_list_(movie_list), tcp_socket_(io_context), udp_socket_(io_context),
-      streamed_movie_(nullptr) {
+    : msg_(), movie_list_(movie_list), tcp_socket_(io_context), udp_socket_(io_context),
+      streamed_movie_(nullptr), reader_(tcp_socket_, msg_.data()) {
 }
 
 tcp::socket& Connection::get_tcp_socket() {
@@ -57,7 +57,8 @@ void Connection::communicate() {
 
     while(is_client_ok && tcp_socket_.is_open() && udp_socket_.is_open()) {
         try {
-            read_with_confirmation();
+            reader_.read_with_confirmation();
+            msg_.parse_header();
         } catch (boost::system::system_error& err) {
             if (err.code().value() == boost::system::errc::no_such_file_or_directory) {
                 std::cerr << "Client has disconnected" << std::string(err.what()) << std::endl;
@@ -69,9 +70,8 @@ void Connection::communicate() {
             return;
         }
 
-        std::cerr << "Received header is: " << message_.get_header().encode() << std::endl;
 
-        auto msg_type = message_.get_header().get_msg_type();
+        auto msg_type = msg_.get_header().get_msg_type();
         is_client_ok = handle_received_msg(msg_type);
     }
 
@@ -110,10 +110,10 @@ bool Connection::handle_get_movie_list() {
     string body = encode_movie_list_as_string(movie_list_);
     protocol::message_type msg_type = protocol::GIVE_MOVIE_LIST;
 
-    message_.get_header().set_msg_type(msg_type);
-    message_.get_header().set_body_len(body.size());
-    message_.set_header(message_.get_header().encode());
-    message_.set_body(body);
+    msg_.get_header().set_msg_type(msg_type);
+    msg_.get_header().set_body_len(body.size());
+    msg_.set_header(msg_.get_header().encode());
+    msg_.set_body(body);
 
     try {
         send_with_confirmation(tcp_socket_, msg_type);
@@ -125,24 +125,8 @@ bool Connection::handle_get_movie_list() {
     return is_client_ok;
 }
 
-void Connection::send_frame(unsigned int frame_num) {
-    protocol::message_type msg_type = protocol::GIVE_FRAME;
-    Frame frame = streamed_movie_->videoStream()
-                              .get_frame(frame_num)
-                              .resize(Resolution::get144p());
-
-    unsigned int num_of_frames = streamed_movie_->videoStream().get_num_of_frames();
-
-    prepare_header(msg_type, frame.data_length(), frame.get_size().width,
-                    frame.get_size().height, num_of_frames, frame_num, frame.is_key_frame());
-    message_.set_header(message_.get_header().encode());
-    message_.set_body(frame.data());
-
-    send_msg_with_frame(frame, msg_type);
-}
-
 bool Connection::handle_get_movie() {
-    std::string movie_name = std::string(message_.body().get(), message_.get_header().get_body_len());
+    std::string movie_name = std::string(msg_.body().get(), msg_.get_header().get_body_len());
 
     try {
         streamed_movie_ = make_unique<Movie>(movie_list_.get_movie_location(movie_name));
@@ -160,6 +144,24 @@ bool Connection::handle_get_movie() {
     return true;
 }
 
+void Connection::send_frame(unsigned int frame_num) {
+    protocol::message_type msg_type = protocol::GIVE_FRAME;
+    Frame frame = streamed_movie_->videoStream()
+                              .get_frame(frame_num)
+                              .resize(Resolution::get144p());
+
+    unsigned int num_of_frames = streamed_movie_->videoStream().get_num_of_frames();
+
+    prepare_header(msg_type, frame.data_length(), frame.get_size().width,
+                    frame.get_size().height, num_of_frames, frame_num, frame.is_key_frame());
+    msg_.set_header(msg_.get_header().encode());
+    msg_.set_body(frame.data());
+
+    send_msg_with_frame(frame, msg_type);
+}
+
+
+
 bool Connection::handle_get_frame() {
     if(!streamed_movie_) {
         std::cerr << "No movie location set for server. Terminating connection" << std::endl;
@@ -167,7 +169,7 @@ bool Connection::handle_get_frame() {
     }
 
     try {
-        send_frame(message_.get_header().get_frame_num());
+        send_frame(msg_.get_header().get_frame_num());
     } catch (std::exception& err) {
         std::cerr << "Error during send_frame() in Connection::handle_get_frame(): " << err.what() << std::endl;
         return false;
@@ -214,19 +216,6 @@ bool Connection::handle_movie_finished() {
     return true;
 }
 
-protocol::message_type Connection::read_confirmation() {
-    char confirmation[protocol::FieldLength::msg_type + 1] = "";
-
-    try {
-        boost::asio::read(tcp_socket_, boost::asio::buffer(confirmation, protocol::FieldLength::msg_type));
-    } catch (boost::system::system_error& err) {
-        std::cerr << "An error occured during confirmation reading: " << err.what() << std::endl;
-    }
-
-    auto confirmation_num = std::stoi(std::string(confirmation));
-    return static_cast<protocol::message_type>(confirmation_num);
-}
-
 void Connection::send_confirmation(protocol::message_type msg_type) {
     std::string confirmation = "0" + to_string(msg_type);
     boost::asio::write(tcp_socket_, boost::asio::buffer(confirmation.c_str(), protocol::FieldLength::msg_type));
@@ -236,41 +225,34 @@ bool Connection::is_confirmation_correct(protocol::message_type msg_type, protoc
     return msg_type == confirmation;
 }
 
-void Connection::read_header() {
-    boost::asio::read(tcp_socket_, boost::asio::buffer(message_.data().get(), protocol::HEADER_LENGTH));
-}
-
-void Connection::read_body() {
-    boost::asio::read(tcp_socket_, boost::asio::buffer(message_.body().get(), message_.get_header().get_body_len()));
-}
 
 void Connection::send_header() {
-    std::string header(message_.data().get(), protocol::HEADER_LENGTH);
+    std::string header(msg_.data().get(), protocol::HEADER_LENGTH);
     std::cerr << "Header to send: " << header << std::endl;
 
-    boost::asio::write(tcp_socket_, boost::asio::buffer(message_.data().get(), protocol::HEADER_LENGTH));
+    boost::asio::write(tcp_socket_, boost::asio::buffer(msg_.data().get(), protocol::HEADER_LENGTH));
 }
 
 void Connection::send_body(udp::socket& udp_socket) {
-    unsigned num_of_full_packets = (message_.msg_len() - protocol::HEADER_LENGTH) / protocol::MAX_DATAGRAM_SIZE;
+    unsigned num_of_full_packets = (msg_.msg_len() - protocol::HEADER_LENGTH) / protocol::MAX_DATAGRAM_SIZE;
 
     for (unsigned short i = 0; i < num_of_full_packets; ++i) {
-        udp_socket.send(boost::asio::buffer(message_.body().get() + protocol::MAX_DATAGRAM_SIZE * i, protocol::MAX_DATAGRAM_SIZE));
+        udp_socket.send(boost::asio::buffer(msg_.body().get() + protocol::MAX_DATAGRAM_SIZE * i, protocol::MAX_DATAGRAM_SIZE));
     }
 
-    unsigned last_packet_num_of_bytes = (message_.msg_len() - protocol::HEADER_LENGTH) - (num_of_full_packets * protocol::MAX_DATAGRAM_SIZE);
+    unsigned last_packet_num_of_bytes = (msg_.msg_len() - protocol::HEADER_LENGTH) - (num_of_full_packets * protocol::MAX_DATAGRAM_SIZE);
 
-    udp_socket.send(boost::asio::buffer(message_.body().get() + protocol::MAX_DATAGRAM_SIZE * (num_of_full_packets), last_packet_num_of_bytes) );
+    udp_socket.send(boost::asio::buffer(msg_.body().get() + protocol::MAX_DATAGRAM_SIZE * (num_of_full_packets), last_packet_num_of_bytes) );
 }
 
 void Connection::send_body(tcp::socket& tcp_socket) {
-    boost::asio::write(tcp_socket, boost::asio::buffer(message_.body().get(), message_.msg_len() - protocol::HEADER_LENGTH));
+    boost::asio::write(tcp_socket, boost::asio::buffer(msg_.data().get() + protocol::HEADER_LENGTH, msg_.msg_len() - protocol::HEADER_LENGTH));
 }
 
 void Connection::send_with_confirmation(tcp::socket& tcp_socket, protocol::message_type expected_confirmation) {
     send_header();
 
-    protocol::message_type confirmation = read_confirmation();
+    protocol::message_type confirmation = reader_.read_confirmation();
     if(!is_confirmation_correct(expected_confirmation, confirmation)) {
         throw std::runtime_error("Wrong confirmation number");
     }
@@ -281,25 +263,12 @@ void Connection::send_with_confirmation(tcp::socket& tcp_socket, protocol::messa
 void Connection::send_with_confirmation(udp::socket& udp_socket, protocol::message_type expected_confirmation) {
     send_header();
 
-    protocol::message_type confirmation = read_confirmation();
+    protocol::message_type confirmation = reader_.read_confirmation();
     if(!is_confirmation_correct(expected_confirmation, confirmation)) {
         throw std::runtime_error("Wrong confirmation number");
     }
 
     send_body(udp_socket);
-}
-
-void Connection::read_with_confirmation() {
-    protocol::Header& header = message_.get_header();
-
-    read_header();
-    header.parse(message_.data().get());
-
-    bool is_confirmation_required = header.get_msg_type() == protocol::message_type::GET_MOVIE;
-    if(is_confirmation_required) {
-        send_confirmation(header.get_msg_type());
-        read_body();
-    }
 }
 
 void Connection::server_close_btn_clicked() {
@@ -319,7 +288,7 @@ void Connection::server_close_btn_clicked() {
 
 void Connection::prepare_header(protocol::message_type msg_type, unsigned body_len, unsigned num_of_cols,
                                 unsigned num_of_rows, unsigned num_of_frames, unsigned frame_num, bool is_key_frame) {
-    protocol::Header& header = message_.get_header();
+    protocol::Header& header = msg_.get_header();
 
     header.set_msg_type(msg_type);
     header.set_body_len(body_len);

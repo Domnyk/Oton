@@ -28,6 +28,8 @@ namespace protocol {
 
         void set_body(std::string);
         void set_body(unsigned char*);
+
+        void parse_header();
     private:
         std::shared_ptr<char> data_;
         Header header_;

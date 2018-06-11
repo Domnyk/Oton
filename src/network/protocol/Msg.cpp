@@ -53,3 +53,7 @@ void Msg::set_header(std::string str) {
 void Msg::set_body(unsigned char* data) {
     memcpy(data_.get() + HEADER_LENGTH, data, header_.get_body_len());
 }
+
+void Msg::parse_header() {
+    header_ = Header(data_.get());
+}

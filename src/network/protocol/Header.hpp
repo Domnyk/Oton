@@ -9,7 +9,10 @@ namespace protocol {
     {
     public:
         Header();
+        Header(const char*);
         Header(protocol::message_type, unsigned int);
+
+        Header& operator=(const Header&);
 
         message_type get_msg_type() const;
         unsigned int get_body_len() const;

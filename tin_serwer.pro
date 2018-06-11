@@ -40,7 +40,8 @@ SOURCES += \
     src/network/protocol/Msg.cpp \
     src/movie/MovieList.cpp \
     src/controller/RootController.cpp \
-    src/network/Acceptor.cpp
+    src/network/Acceptor.cpp \
+    src/network/Reader.cpp
 
 HEADERS += \
     src/gui/mainwindow.h \
@@ -56,7 +57,8 @@ HEADERS += \
     src/network/protocol/Msg.hpp \
     src/movie/MovieList.hpp \
     src/controller/RootController.hpp \
-    src/network/Acceptor.hpp
+    src/network/Acceptor.hpp \
+    src/network/Reader.hpp
 
 test {
     message(Test build)
