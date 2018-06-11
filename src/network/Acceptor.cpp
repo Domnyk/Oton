@@ -1,20 +1,20 @@
 #include <iostream>
 #include <algorithm>
 #include <boost/system/error_code.hpp>
-#include "NetworkLayer.hpp"
+#include "Acceptor.hpp"
 
-const unsigned short NetworkLayer::DEFAULT_NUM_OF_THREAD_FOR_ASIO = 5;
-const unsigned short NetworkLayer::DEFAULT_MAX_NUM_OF_CLIENTS = 5;
+const unsigned short Acceptor::DEFAULT_NUM_OF_THREAD_FOR_ASIO = 5;
+const unsigned short Acceptor::DEFAULT_MAX_NUM_OF_CLIENTS = 5;
 
 const unsigned short ANY_PORT = 0;
 
-NetworkLayer::NetworkLayer(MovieList& movie_list, const unsigned short max_num_of_clients,
+Acceptor::Acceptor(MovieList& movie_list, const unsigned short max_num_of_clients,
                            const unsigned short threads_num) :
     threads_num_(threads_num), movie_list_(movie_list), io_context(),
-    tcp_acceptor_(io_context), threads(), work_guard_(boost::asio::make_work_guard(io_context)) ,max_num_of_clients_(max_num_of_clients) {
+    threads(), tcp_acceptor_(io_context), work_guard_(boost::asio::make_work_guard(io_context)) ,max_num_of_clients_(max_num_of_clients) {
 }
 
-void NetworkLayer::handle_start_distributing(unsigned short max_num_of_clients) {
+void Acceptor::handle_start_distributing(unsigned short max_num_of_clients) {
     max_num_of_clients_ = max_num_of_clients;
 
     open_acceptor();
@@ -22,19 +22,17 @@ void NetworkLayer::handle_start_distributing(unsigned short max_num_of_clients) 
     start_ioc_threads();
 }
 
-void NetworkLayer::start_tcp_accept() {
+void Acceptor::start_tcp_accept() {
     auto connection_ptr = make_shared<Connection>(tcp_acceptor_.get_executor().context(), movie_list_);
 
     // Signal handling
-    QObject::connect(&(*connection_ptr), &Connection::user_connects, this, &NetworkLayer::user_connected);
-    QObject::connect(&(*connection_ptr), &Connection::user_disconnects, this, &NetworkLayer::user_disconnected);
+    QObject::connect(connection_ptr.get(), &Connection::user_connects, this, &Acceptor::user_connected);
+    QObject::connect(connection_ptr.get(), &Connection::user_disconnects, this, &Acceptor::user_disconnected);
 
     // Signal chaining
-    QObject::connect(&(*connection_ptr), &Connection::user_connects, this, &NetworkLayer::user_connects);
-    QObject::connect(&(*connection_ptr), &Connection::user_disconnects, this, &NetworkLayer::user_disconnects);
-    QObject::connect(this, &NetworkLayer::server_closes, &(*connection_ptr), &Connection::server_close_btn_clicked);
-
-    std::cerr << "Is acceptor open: " << tcp_acceptor_.is_open() << std::endl;
+    QObject::connect(connection_ptr.get(), &Connection::user_connects, this, &Acceptor::user_connects);
+    QObject::connect(connection_ptr.get(), &Connection::user_disconnects, this, &Acceptor::user_disconnects);
+    QObject::connect(this, &Acceptor::server_closes, connection_ptr.get(), &Connection::server_close_btn_clicked);
 
     tcp_acceptor_.async_accept(connection_ptr->get_tcp_socket(),
                                [connection_ptr, this](const boost::system::error_code& ec) {
@@ -53,7 +51,7 @@ void NetworkLayer::start_tcp_accept() {
     );
 }
 
-void NetworkLayer::handle_tcp_accept(shared_ptr<Connection> connection_ptr) {
+void Acceptor::handle_tcp_accept(shared_ptr<Connection> connection_ptr) {
     if (curr_num_of_clients_ >= max_num_of_clients_) {
         std::cerr << "Reached max number of connections. Closing this socket" << std::endl;
         connection_ptr->get_tcp_socket().close();
@@ -71,7 +69,7 @@ void NetworkLayer::handle_tcp_accept(shared_ptr<Connection> connection_ptr) {
     this->start_tcp_accept();
 }
 
-void NetworkLayer::handle_stop_distributing() {
+void Acceptor::handle_stop_distributing() {
     try {
         tcp_acceptor_.cancel();
         tcp_acceptor_.close();
@@ -84,23 +82,7 @@ void NetworkLayer::handle_stop_distributing() {
     stop_ioc_threads();
 }
 
-unsigned short NetworkLayer::get_tcp_port() const {
-    return tcp_acceptor_.local_endpoint().port();
-}
-
-void NetworkLayer::user_disconnected() {
-     --curr_num_of_clients_;
-}
-
-void NetworkLayer::user_connected() {
-     ++curr_num_of_clients_;
-}
-
-NetworkLayer::~NetworkLayer() {
-    io_context.stop();
-}
-
-void NetworkLayer::open_acceptor() {
+void Acceptor::open_acceptor() {
     try {
         tcp::endpoint endpoint(tcp::v4(), ANY_PORT);
         tcp_acceptor_.open(endpoint.protocol());
@@ -113,7 +95,7 @@ void NetworkLayer::open_acceptor() {
     }
 }
 
-void NetworkLayer::start_ioc_threads() {
+void Acceptor::start_ioc_threads() {
     for (int i = 0; i < threads_num_; ++i) {
         threads.emplace_back(
             [&]() {
@@ -127,7 +109,7 @@ void NetworkLayer::start_ioc_threads() {
     }
  }
 
-void NetworkLayer::stop_ioc_threads() {
+void Acceptor::stop_ioc_threads() {
     io_context.stop();
     io_context.restart();
 
@@ -135,5 +117,25 @@ void NetworkLayer::stop_ioc_threads() {
         thread.~thread();
     }
     threads.clear();
+}
 
+unsigned short Acceptor::get_tcp_port() const {
+    return tcp_acceptor_.local_endpoint().port();
+}
+
+void Acceptor::user_disconnected() {
+     --curr_num_of_clients_;
+}
+
+void Acceptor::user_connected() {
+     ++curr_num_of_clients_;
+}
+
+Acceptor::~Acceptor() {
+    emit server_closes();
+
+    stop_ioc_threads();
+
+    work_guard_.reset();
+    io_context.stop();
 }

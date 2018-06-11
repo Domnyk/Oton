@@ -13,18 +13,17 @@ using namespace boost::asio::ip;
 
 class RootController;
 
-class NetworkLayer : public QObject
+class Acceptor : public QObject
 {
     Q_OBJECT
 
     friend class RootController;
 
 public:
-    NetworkLayer(MovieList&,
-                  const unsigned short max_num_of_clients = NetworkLayer::DEFAULT_MAX_NUM_OF_CLIENTS,
-                  const unsigned short threads_num  = NetworkLayer::DEFAULT_NUM_OF_THREAD_FOR_ASIO);
-
-    ~NetworkLayer();
+    Acceptor(MovieList&,
+                  const unsigned short max_num_of_clients = Acceptor::DEFAULT_MAX_NUM_OF_CLIENTS,
+                  const unsigned short threads_num  = Acceptor::DEFAULT_NUM_OF_THREAD_FOR_ASIO);
+    ~Acceptor();
 
     static const unsigned short DEFAULT_NUM_OF_THREAD_FOR_ASIO;
     static const unsigned short DEFAULT_MAX_NUM_OF_CLIENTS;

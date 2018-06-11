@@ -55,7 +55,7 @@ void Connection::start() {
 void Connection::communicate() {
     bool is_client_ok = true;
 
-    while(is_client_ok) {
+    while(is_client_ok && tcp_socket_.is_open() && udp_socket_.is_open()) {
         try {
             read_with_confirmation();
         } catch (boost::system::system_error& err) {
@@ -305,11 +305,14 @@ void Connection::read_with_confirmation() {
 void Connection::server_close_btn_clicked() {
     std::cerr << "Closing sockets" << std::endl;
 
+
     if(tcp_socket_.is_open()) {
+        tcp_socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
         tcp_socket_.close();
     }
 
     if(udp_socket_.is_open()) {
+        udp_socket_.shutdown(boost::asio::ip::udp::socket::shutdown_both);
         udp_socket_.close();
     }
 }

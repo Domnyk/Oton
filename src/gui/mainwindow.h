@@ -3,7 +3,6 @@
 
 #include <QMainWindow>
 #include <QFileDialog>
-#include "../server/Server.hpp"
 
 class RootController;
 

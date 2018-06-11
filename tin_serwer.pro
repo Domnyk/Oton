@@ -31,7 +31,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     src/main.cpp \
     src/gui/mainwindow.cpp \
-    src/server/Server.cpp \
     src/movie/AudioStream.cpp \
     src/movie/Frame.cpp \
     src/movie/Movie.cpp \
@@ -39,13 +38,12 @@ SOURCES += \
     src/network/protocol/Header.cpp \
     src/network/Connection.cpp \
     src/network/protocol/Msg.cpp \
-    src/server/NetworkLayer.cpp \
-    src/server/MovieList.cpp \
-    src/controller/RootController.cpp
+    src/movie/MovieList.cpp \
+    src/controller/RootController.cpp \
+    src/network/Acceptor.cpp
 
 HEADERS += \
     src/gui/mainwindow.h \
-    src/server/Server.hpp \
     src/movie/AudioStream.hpp \
     src/movie/Frame.hpp \
     src/movie/Movie.hpp \
@@ -56,9 +54,9 @@ HEADERS += \
     src/network/protocol/Constants.hpp \
     src/network/Connection.hpp \
     src/network/protocol/Msg.hpp \
-    src/server/NetworkLayer.hpp \
-    src/server/MovieList.hpp \
-    src/controller/RootController.hpp
+    src/movie/MovieList.hpp \
+    src/controller/RootController.hpp \
+    src/network/Acceptor.hpp
 
 test {
     message(Test build)

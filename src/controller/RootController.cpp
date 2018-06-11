@@ -1,7 +1,7 @@
 #include "RootController.hpp"
 
 RootController::RootController(int argc, char *argv[])
-    : movie_list_(), network_layer_(movie_list_),
+    : movie_list_(), acceptor_(movie_list_),
       q_application_(argc, argv), main_window_(nullptr) {
 
     qRegisterMetaType<std::string>("std::string");
@@ -14,12 +14,12 @@ RootController::RootController(int argc, char *argv[])
     QObject::connect(&main_window_, &MainWindow::delete_has_been_clicked, this, &RootController::delete_file);
     QObject::connect(this, &RootController::last_movie_deleted, &main_window_, &MainWindow::handle_last_movie_deleted);
 
-    QObject::connect(&main_window_, &MainWindow::start_distributing, &network_layer_, &NetworkLayer::handle_start_distributing);
-    QObject::connect(&main_window_, &MainWindow::stop_distributing, &network_layer_, &NetworkLayer::handle_stop_distributing);
-    QObject::connect(&network_layer_, &NetworkLayer::server_distributes, &main_window_, &MainWindow::handle_server_distributes);
+    QObject::connect(&main_window_, &MainWindow::start_distributing, &acceptor_, &Acceptor::handle_start_distributing);
+    QObject::connect(&main_window_, &MainWindow::stop_distributing, &acceptor_, &Acceptor::handle_stop_distributing);
+    QObject::connect(&acceptor_, &Acceptor::server_distributes, &main_window_, &MainWindow::handle_server_distributes);
 
-    QObject::connect(&network_layer_, &NetworkLayer::user_connects, &main_window_, &MainWindow::user_connected);
-    QObject::connect(&network_layer_, &NetworkLayer::user_disconnects, &main_window_, &MainWindow::user_disconnected);
+    QObject::connect(&acceptor_, &Acceptor::user_connects, &main_window_, &MainWindow::user_connected);
+    QObject::connect(&acceptor_, &Acceptor::user_disconnects, &main_window_, &MainWindow::user_disconnected);
 
     main_window_.show();
 }

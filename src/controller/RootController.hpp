@@ -4,20 +4,14 @@
 #include <QObject>
 #include <QApplication>
 #include "../gui/mainwindow.h"
-#include "../server/MovieList.hpp"
-#include "../server/NetworkLayer.hpp"
+#include "../movie/MovieList.hpp"
+#include "../network/Acceptor.hpp"
 
 class RootController : public QObject
 {
     Q_OBJECT
 public:
     RootController(int, char**);
-
-    MovieList& get_movie_list();
-    const MovieList& get_movie_list() const;
-
-    NetworkLayer& get_network_layer();
-    const NetworkLayer& get_network_layer() const;
 
     int exec() const;
 
@@ -36,7 +30,7 @@ private:
 
     MovieList movie_list_;
 
-    NetworkLayer network_layer_;
+    Acceptor acceptor_;
 
     QApplication q_application_;
     MainWindow main_window_;
