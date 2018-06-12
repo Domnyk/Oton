@@ -33,6 +33,7 @@ signals:
     void start_distributing(unsigned short);
     void stop_distributing();
 
+    void window_closes();
 private slots:
     void handle_movie_already_on_list();
     void handle_first_movie_added(const QString);
@@ -59,6 +60,8 @@ private slots:
 
     void user_disconnected(const std::string&);
 private:
+    void closeEvent(QCloseEvent*);
+
     Ui::MainWindow *ui;
 };
 

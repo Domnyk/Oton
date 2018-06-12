@@ -11,7 +11,7 @@
 Connection::Connection(boost::asio::io_context& io_context, MovieList& movie_list)
     : msg_(), movie_list_(movie_list), tcp_socket_(io_context), udp_socket_(io_context),
       streamed_movie_(nullptr), reader_(tcp_socket_, msg_.data()),
-      sender_(tcp_socket_, udp_socket_, msg_.data())  {
+      sender_(tcp_socket_, udp_socket_, msg_.data()) {
 }
 
 tcp::socket& Connection::get_tcp_socket() {
@@ -34,7 +34,8 @@ void Connection::start() {
     try {
         udp_socket_.connect(udp::endpoint(tcp_socket_.remote_endpoint().address(), client_udp_port));
     } catch (std::exception& err) {
-        std::cerr << "Error in udp_socket connect" << std::endl;
+        std::cerr << "Error in udp_socket connect. Terminate" << std::endl;
+        return;
     }
 
     // Send server udp port num
@@ -72,7 +73,7 @@ void Connection::communicate() {
         }
 
 
-        auto msg_type = msg_.get_header().get_msg_type();
+        protocol::message_type msg_type = msg_.get_header().get_msg_type();
         is_client_ok = handle_received_msg(msg_type);
     }
 
@@ -145,6 +146,22 @@ bool Connection::handle_get_movie() {
     return true;
 }
 
+bool Connection::handle_get_frame() {
+    if(!streamed_movie_) {
+        std::cerr << "No movie location set for server. Terminating connection" << std::endl;
+        return false;
+    }
+
+    try {
+        send_frame(msg_.get_header().get_frame_num());
+    } catch (std::exception& err) {
+        std::cerr << "Error during send_frame() in Connection::handle_get_frame(): " << err.what() << std::endl;
+        return false;
+    }
+
+    return true;
+}
+
 void Connection::send_frame(unsigned int frame_num) {
     protocol::message_type msg_type = protocol::GIVE_FRAME;
     Frame frame = streamed_movie_->videoStream()
@@ -162,29 +179,10 @@ void Connection::send_frame(unsigned int frame_num) {
 }
 
 
-
-bool Connection::handle_get_frame() {
-    if(!streamed_movie_) {
-        std::cerr << "No movie location set for server. Terminating connection" << std::endl;
-        return false;
-    }
-
-    try {
-        send_frame(msg_.get_header().get_frame_num());
-    } catch (std::exception& err) {
-        std::cerr << "Error during send_frame() in Connection::handle_get_frame(): " << err.what() << std::endl;
-        return false;
-    }
-
-    return true;
-}
-
 void Connection::send_msg_with_frame(const Frame& frame, protocol::message_type msg_type) {
     if (frame.is_key_frame()) {
-            std::cerr << "Send by TCP" << std::endl;
             sender_.send_with_confirmation_tcp(msg_.get_header().get_body_len(), msg_type);
     } else {
-            std::cerr << "Send by UDP" << std::endl;
             sender_.send_with_confirmation_udp(msg_.get_header().get_body_len(), msg_type);
     }
 }
@@ -208,8 +206,6 @@ bool Connection::disconnect_client() {
         }
     }
 
-
-
     return true;
 }
 
@@ -217,21 +213,12 @@ bool Connection::handle_movie_finished() {
     return true;
 }
 
-bool Connection::is_confirmation_correct(protocol::message_type msg_type, protocol::message_type confirmation) {
-    return msg_type == confirmation;
-}
-
 void Connection::server_close_btn_clicked() {
-    std::cerr << "Closing sockets" << std::endl;
-
-
     if(tcp_socket_.is_open()) {
-        tcp_socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
         tcp_socket_.close();
     }
 
     if(udp_socket_.is_open()) {
-        udp_socket_.shutdown(boost::asio::ip::udp::socket::shutdown_both);
         udp_socket_.close();
     }
 }

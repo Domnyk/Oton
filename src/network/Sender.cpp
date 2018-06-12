@@ -17,8 +17,6 @@ void Sender::send_body_udp(unsigned long body_len) {
     unsigned num_of_full_packets = body_len / protocol::MAX_DATAGRAM_SIZE;
     unsigned last_packet_size = body_len - (num_of_full_packets * protocol::MAX_DATAGRAM_SIZE);
 
-
-
     for (unsigned short i = 0; i < num_of_full_packets; ++i) {
         udp_socket_.send(boost::asio::buffer(data_.get() + protocol::HEADER_LENGTH + protocol::MAX_DATAGRAM_SIZE * i, protocol::MAX_DATAGRAM_SIZE));
     }
@@ -26,6 +24,9 @@ void Sender::send_body_udp(unsigned long body_len) {
     udp_socket_.send(boost::asio::buffer(data_.get() + protocol::HEADER_LENGTH + protocol::MAX_DATAGRAM_SIZE * (num_of_full_packets), last_packet_size));
 }
 
+/*
+ * This method is here for simplicity
+ */
 protocol::message_type Sender::read_confirmation() {
     char confirmation[protocol::FieldLength::msg_type + 1] = "";
 

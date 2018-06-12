@@ -26,7 +26,6 @@ private:
     void communicate();
     bool handle_received_msg(protocol::message_type);
 
-
     bool handle_get_movie_list();
     bool handle_get_movie();
     bool handle_get_frame();
@@ -34,16 +33,7 @@ private:
     bool disconnect_client();
 
     void send_msg_with_frame(const Frame&, protocol::message_type);
-    // void send_header();
-    // void send_body(tcp::socket&);
-    // void send_body(udp::socket&);
-    // void send_confirmation(protocol::message_type);
-    // void send_with_confirmation(tcp::socket&, protocol::message_type);
-    // void send_with_confirmation(udp::socket&, protocol::message_type);
-
     void send_frame(unsigned int);
-
-    bool is_confirmation_correct(protocol::message_type msg_type, protocol::message_type confirmation);
 
     void prepare_header(protocol::message_type, unsigned, unsigned, unsigned, unsigned, unsigned, bool);
 

@@ -5,8 +5,6 @@
 
 
 AudioStream::AudioStream(const std::string& path_to_movie) {
-    std::cerr << "AudioStream constructor does nothing" << std::endl;
-
     /* av_register_all();
     ao_initialize();
 
@@ -14,7 +12,6 @@ AudioStream::AudioStream(const std::string& path_to_movie) {
 }
 
 AudioStream::~AudioStream() {
-    std::cerr << "AudioStream destructor does nothing" << std::endl;
     // ao_shutdown();
 }
 

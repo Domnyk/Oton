@@ -20,12 +20,9 @@ class Acceptor : public QObject
     friend class RootController;
 
 public:
-    Acceptor(MovieList&,
-                  const unsigned short max_num_of_clients = Acceptor::DEFAULT_MAX_NUM_OF_CLIENTS,
-                  const unsigned short threads_num  = Acceptor::DEFAULT_NUM_OF_THREAD_FOR_ASIO);
-    ~Acceptor();
+    Acceptor(MovieList&, boost::asio::io_context&,
+             const unsigned short max_num_of_clients = Acceptor::DEFAULT_MAX_NUM_OF_CLIENTS);
 
-    static const unsigned short DEFAULT_NUM_OF_THREAD_FOR_ASIO;
     static const unsigned short DEFAULT_MAX_NUM_OF_CLIENTS;
 
     unsigned short get_tcp_port() const;
@@ -36,6 +33,8 @@ signals:
     void server_distributes(unsigned short);
 
     void server_closes();
+
+    void show_msg(int);
 private slots:
     void user_connected();
     void user_disconnected();
@@ -46,21 +45,15 @@ private:
     void start_tcp_accept();
     void handle_tcp_accept(shared_ptr<Connection>);
 
-    void start_ioc_threads();
-    void stop_ioc_threads();
-
     void open_acceptor();
 
-    const unsigned short threads_num_;
     MovieList& movie_list_;
 
-    boost::asio::io_context io_context;
-
-    std::vector<std::thread> threads;
+    boost::asio::io_context& io_context_;
 
     tcp::acceptor tcp_acceptor_;
 
-    boost::asio::executor_work_guard<boost::asio::io_context::executor_type> work_guard_;
+    vector<shared_ptr<Connection>> connections_;
 
     unsigned short max_num_of_clients_ = 1;
     unsigned short curr_num_of_clients_ = 0;

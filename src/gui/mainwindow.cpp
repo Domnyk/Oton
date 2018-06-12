@@ -7,7 +7,6 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
-    // server_(new MovieList())
 {
     ui->setupUi(this);
     ui->edit_max_num_of_clients->setValidator(new QIntValidator(0, 100, this));
@@ -119,22 +118,12 @@ void MainWindow::on_btn_open_server_clicked()
     emit start_distributing(max_num_of_clients);
 
     ui->edit_max_num_of_clients->setText(QString::fromStdString(std::to_string(max_num_of_clients)));
-
-
-
-    /*
-     * Connect network_layer to peer list
-     */
-    /* QObject::connect(&(*server_.get_network_layer()), &NetworkLayer::user_connects,
-                     this, &MainWindow::user_connected);
-    QObject::connect(&(*server_.get_network_layer()), &NetworkLayer::user_disconnects,
-                     this, &MainWindow::user_disconnected);
-
-    QObject::connect(this, &MainWindow::server_closes, &(*server_.get_network_layer()), &NetworkLayer::server_closes);
-
-    ui->tcp_port->setText(QString::fromStdString(to_string(tcp_port))); */
 }
 
 void MainWindow::handle_server_distributes(unsigned short port_num) {
     ui->tcp_port->setText(QString::number(port_num));
+}
+
+void MainWindow::closeEvent(QCloseEvent* close_event) {
+    emit window_closes();
 }

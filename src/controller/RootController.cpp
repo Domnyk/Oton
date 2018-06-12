@@ -1,8 +1,8 @@
 #include "RootController.hpp"
 
 RootController::RootController(int argc, char *argv[])
-    : movie_list_(), acceptor_(movie_list_),
-      q_application_(argc, argv), main_window_(nullptr) {
+    : io_context_(), work_guard_(boost::asio::make_work_guard(io_context_)), threads_(),
+      movie_list_(), acceptor_(movie_list_, io_context_), q_application_(argc, argv), main_window_(nullptr) {
 
     qRegisterMetaType<std::string>("std::string");
 
@@ -20,6 +20,10 @@ RootController::RootController(int argc, char *argv[])
 
     QObject::connect(&acceptor_, &Acceptor::user_connects, &main_window_, &MainWindow::user_connected);
     QObject::connect(&acceptor_, &Acceptor::user_disconnects, &main_window_, &MainWindow::user_disconnected);
+
+    QObject::connect(&main_window_, &MainWindow::window_closes, this, &RootController::handle_window_closed);
+
+    start_ioc_threads();
 
     main_window_.show();
 }
@@ -55,6 +59,32 @@ void RootController::delete_file(const QString filepath) {
     if (num_of_movies == 0) {
         emit last_movie_deleted();
     }
+}
+
+
+void RootController::start_ioc_threads() {
+    for (int i = 0; i < RootController::NUM_OF_THREADS; ++i) {
+        threads_.emplace_back(
+            [&]() {
+                io_context_.run();
+            }
+        );
+    }
+
+    for(auto& thread: threads_) {
+        thread.detach();
+    }
+ }
+
+void RootController::stop_ioc_threads() {
+    for(auto& thread: threads_) {
+        thread.~thread();
+    }
+    threads_.clear();
+}
+
+void RootController::handle_window_closed() {
+    io_context_.stop();
 }
 
 
